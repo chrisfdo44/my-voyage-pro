@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Ship, Info, TrendingUp } from "lucide-react";
 
 export function BallastCalc() {
@@ -8,32 +8,46 @@ export function BallastCalc() {
     bunkerPrice: 0,
     consumptionBallast: 0,
     hireBssAps: 0,
-    ballastBonus: 0
+    ballastBonus: 0,
   });
 
   const [result, setResult] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const calculate = async () => {
     try {
-      const res = await fetch("/api/calculate/ballast", {
+      setLoading(true);
+      setError("");
+
+      const res = await fetch("/api/calculate-ballast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs),
       });
+
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Request failed (${res.status})`);
+      }
+
       setResult(data.result);
-    } catch (error) {
-      console.error("Calculation error:", error);
+    } catch (err: any) {
+      console.error("Calculation error:", err);
+      setError(err?.message || "Calculation failed");
+      setResult(null);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    calculate();
-  }, [inputs]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setInputs(prev => ({ ...prev, [name]: value }));
+    setInputs((prev) => ({
+      ...prev,
+      [name]: value === "" ? 0 : Number(value),
+    }));
   };
 
   return (
@@ -43,8 +57,12 @@ export function BallastCalc() {
           <Ship className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-glow" />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tighter uppercase">Ballast <span className="text-cyan-glow">Calculator</span></h1>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Gross DOP Hire Calculation Module</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tighter uppercase">
+            Ballast <span className="text-cyan-glow">Calculator</span>
+          </h1>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+            Gross DOP Hire Calculation Module
+          </p>
         </div>
       </div>
 
@@ -54,32 +72,42 @@ export function BallastCalc() {
             <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
             Input Parameters
           </h3>
-          
+
           <div className="grid grid-cols-2 gap-4 sm:gap-6">
             <Input label="Ballast Days" name="ballastDays" value={inputs.ballastDays} onChange={handleChange} />
             <Input label="Total Voyage Days" name="voyageDays" value={inputs.voyageDays} onChange={handleChange} />
           </div>
 
           <Input label="Bunker Price ($)" name="bunkerPrice" value={inputs.bunkerPrice} onChange={handleChange} />
-          <Input label="Ballast Consumption (MT/day)" name="consumptionBallast" value={inputs.consumptionBallast} onChange={handleChange} />
-          
+          <Input
+            label="Ballast Consumption (MT/day)"
+            name="consumptionBallast"
+            value={inputs.consumptionBallast}
+            onChange={handleChange}
+          />
+
           <div className="grid grid-cols-2 gap-4 sm:gap-6">
             <Input label="Hire Basis APS ($)" name="hireBssAps" value={inputs.hireBssAps} onChange={handleChange} />
             <Input label="Ballast Bonus ($)" name="ballastBonus" value={inputs.ballastBonus} onChange={handleChange} />
           </div>
 
-          <button 
+          <button
             onClick={calculate}
-            className="w-full mt-4 py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)]"
+            disabled={loading}
+            className="w-full mt-4 py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Calculate Gross DOP Hire
+            {loading ? "Processing..." : "Calculate Gross DOP Hire"}
           </button>
+
+          {error ? <p className="mt-2 text-xs text-red-400 font-mono">{error}</p> : null}
         </div>
 
         <div className="space-y-6">
           <div className="glass-panel rounded-3xl p-6 sm:p-8 border-l-4 border-l-cyan-glow relative overflow-hidden">
             <div className="relative z-10">
-              <h3 className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-4">Gross DOP Hire</h3>
+              <h3 className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-4">
+                Gross DOP Hire
+              </h3>
               <div className="text-4xl sm:text-5xl font-mono font-bold text-white mb-6 tracking-tighter">
                 {result !== null ? `$${result.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "—"}
               </div>
@@ -106,7 +134,17 @@ export function BallastCalc() {
   );
 }
 
-function Input({ label, name, value, onChange }: { label: string, name: string, value: any, onChange: any }) {
+function Input({
+  label,
+  name,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  value: any;
+  onChange: any;
+}) {
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
