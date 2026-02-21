@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Navigation, Info, DollarSign, Clock, Fuel } from "lucide-react";
 
 export function VoyageCalc() {
@@ -16,32 +16,43 @@ export function VoyageCalc() {
     workingConsumption: 0,
     idleConsumption: 0,
     hire: 0,
-    addcom: 0
+    addcom: 0,
   });
 
   const [results, setResults] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const calculate = async () => {
     try {
-      const res = await fetch("/api/calculate/voyage", {
+      setLoading(true);
+      setError("");
+
+      const res = await fetch("/api/calculate-voyage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs),
       });
+
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Request failed (${res.status})`);
+      }
+
       setResults(data);
-    } catch (error) {
-      console.error("Calculation error:", error);
+    } catch (err: any) {
+      console.error("Calculation error:", err);
+      setError(err?.message || "Calculation failed");
+      setResults(null);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    calculate();
-  }, [inputs]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setInputs(prev => ({ ...prev, [name]: value }));
+    setInputs((prev) => ({ ...prev, [name]: value === "" ? 0 : Number(value) }));
   };
 
   return (
@@ -51,8 +62,12 @@ export function VoyageCalc() {
           <Navigation className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-glow" />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tighter uppercase">Voyage <span className="text-cyan-glow">Mini Calculator</span></h1>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Route & Fuel Analysis On the go</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tighter uppercase">
+            Voyage <span className="text-cyan-glow">Mini Calculator</span>
+          </h1>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+            Route & Fuel Analysis On the go
+          </p>
         </div>
       </div>
 
@@ -97,12 +112,15 @@ export function VoyageCalc() {
           </div>
 
           <div className="p-6 sm:p-8 glass-panel border-t border-cyan-glow/10">
-            <button 
+            <button
               onClick={calculate}
-              className="w-full py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)]"
+              disabled={loading}
+              className="w-full py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Run Simulation
+              {loading ? "Processing..." : "Run Simulation"}
             </button>
+
+            {error ? <p className="mt-4 text-xs text-red-400 font-mono">{error}</p> : null}
           </div>
         </div>
 
@@ -113,30 +131,48 @@ export function VoyageCalc() {
                 <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2">
                   <Clock className="w-3 h-3 text-cyan-glow" /> Total Duration
                 </div>
-                <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tighter">{results.totalDuration.toFixed(2)} <span className="text-xs text-slate-500">DAYS</span></div>
+                <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tighter">
+                  {Number(results.totalDuration || 0).toFixed(2)}{" "}
+                  <span className="text-xs text-slate-500">DAYS</span>
+                </div>
               </div>
+
               <div>
                 <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2">
-                  <Fuel className="w-3 h-3 text-cyan-glow" /> Bunker Consumption
+                  <Fuel className="w-3 h-3 text-cyan-glow" /> Bunker Cost
                 </div>
-                <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tighter">${results.totalBunkerCost.toLocaleString()}</div>
+                <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tighter">
+                  ${Number(results.totalBunkerCost || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
               </div>
+
               <div>
                 <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2">
                   <DollarSign className="w-3 h-3 text-cyan-glow" /> Operational Expenses
                 </div>
-                <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tighter">${results.totalExpenses.toLocaleString()}</div>
+                <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tighter">
+                  ${Number(results.totalExpenses || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
               </div>
+
               <div className="pt-6 sm:pt-8 border-t border-cyan-glow/10">
-                <div className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-2">Target Freight Rate</div>
-                <div className="text-4xl sm:text-5xl font-mono font-bold text-cyan-glow tracking-tighter">${results.freight.toFixed(2)}</div>
-                <div className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Per Metric Ton</div>
+                <div className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-2">
+                  Target Freight Rate
+                </div>
+                <div className="text-4xl sm:text-5xl font-mono font-bold text-cyan-glow tracking-tighter">
+                  ${Number(results.freight || 0).toFixed(2)}
+                </div>
+                <div className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">
+                  Per Metric Ton
+                </div>
               </div>
             </div>
           ) : (
             <div className="glass-panel rounded-3xl border border-dashed border-cyan-glow/20 p-8 text-center flex flex-col items-center justify-center h-full min-h-[300px] sm:min-h-[400px]">
               <Navigation className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-glow/10 mb-4 animate-pulse" />
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Awaiting Operational Data</p>
+              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+                Awaiting Operational Data
+              </p>
             </div>
           )}
 
@@ -154,7 +190,17 @@ export function VoyageCalc() {
   );
 }
 
-function Input({ label, name, value, onChange }: { label: string, name: string, value: any, onChange: any }) {
+function Input({
+  label,
+  name,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  value: any;
+  onChange: any;
+}) {
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
