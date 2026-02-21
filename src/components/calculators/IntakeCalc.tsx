@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Anchor, Info } from "lucide-react";
 
 export function IntakeCalc() {
@@ -13,32 +13,55 @@ export function IntakeCalc() {
     vslConstant: 0,
     qty: 0,
     tolerance: 0,
-    tropical: "No"
+    tropical: "No",
   });
 
   const [result, setResult] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const calculate = async () => {
     try {
-      const res = await fetch("/api/calculate/intake", {
+      setLoading(true);
+      setError("");
+
+      const res = await fetch("/api/calculate-intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs),
       });
+
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Request failed (${res.status})`);
+      }
+
       setResult(data.result);
-    } catch (error) {
-      console.error("Calculation error:", error);
+    } catch (err: any) {
+      console.error("Calculation error:", err);
+      setError(err?.message || "Calculation failed");
+      setResult(null);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    calculate();
-  }, [inputs]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setInputs(prev => ({ ...prev, [name]: value }));
+
+    // Keep numbers as numbers (except tropical which is a string)
+    if (name === "tropical") {
+      setInputs((prev) => ({ ...prev, [name]: value }));
+      return;
+    }
+
+    setInputs((prev) => ({
+      ...prev,
+      [name]: value === "" ? 0 : Number(value),
+    }));
   };
 
   return (
@@ -48,8 +71,12 @@ export function IntakeCalc() {
           <Anchor className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-glow" />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tighter uppercase">Intake <span className="text-cyan-glow">Analysis</span></h1>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Cargo Capacity Optimization Module</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tighter uppercase">
+            Intake <span className="text-cyan-glow">Analysis</span>
+          </h1>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+            Cargo Capacity Optimization Module
+          </p>
         </div>
       </div>
 
@@ -67,6 +94,7 @@ export function IntakeCalc() {
               <Input label="Grain Capacity (cbft)" name="grainCapacity" value={inputs.grainCapacity} onChange={handleChange} />
               <Input label="Stowage Factor (SF)" name="sf" value={inputs.sf} onChange={handleChange} />
             </div>
+
             <div className="space-y-4 sm:space-y-6">
               <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
                 <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
@@ -77,9 +105,12 @@ export function IntakeCalc() {
               <Input label="Vessel Constant (MT)" name="vslConstant" value={inputs.vslConstant} onChange={handleChange} />
               <Input label="Cargo Quantity (MT)" name="qty" value={inputs.qty} onChange={handleChange} />
               <Input label="Tolerance (%)" name="tolerance" value={inputs.tolerance} onChange={handleChange} />
+
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Tropical Zone</label>
-                <select 
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+                  Tropical Zone
+                </label>
+                <select
                   name="tropical"
                   value={inputs.tropical}
                   onChange={handleChange}
@@ -92,17 +123,24 @@ export function IntakeCalc() {
             </div>
           </div>
 
-          <button 
+          <button
             onClick={calculate}
-            className="w-full mt-8 sm:mt-12 py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)]"
+            disabled={loading}
+            className="w-full mt-8 sm:mt-12 py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Execute Analysis
+            {loading ? "Processing..." : "Execute Analysis"}
           </button>
+
+          {error ? (
+            <p className="mt-4 text-xs text-red-400 font-mono">{error}</p>
+          ) : null}
         </div>
 
         <div className="space-y-6">
           <div className="glass-panel rounded-3xl p-6 sm:p-8 border-l-4 border-l-cyan-glow">
-            <h3 className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-4">Calculated Intake</h3>
+            <h3 className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-4">
+              Calculated Intake
+            </h3>
             <div className="text-4xl sm:text-5xl font-mono font-bold text-white mb-2 tracking-tighter">
               {result !== null ? `${result.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "—"}
               <span className="text-sm text-slate-500 ml-2">MT</span>
@@ -110,7 +148,9 @@ export function IntakeCalc() {
             <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-6">
               <div className="w-2/3 h-full bg-cyan-glow animate-pulse"></div>
             </div>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-4">Confidence: 99.8%</p>
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-4">
+              Confidence: 99.8%
+            </p>
           </div>
 
           <div className="glass-panel rounded-3xl p-6">
@@ -127,10 +167,22 @@ export function IntakeCalc() {
   );
 }
 
-function Input({ label, name, value, onChange }: { label: string, name: string, value: any, onChange: any }) {
+function Input({
+  label,
+  name,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  value: any;
+  onChange: any;
+}) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+        {label}
+      </label>
       <input
         type="number"
         step="any"
