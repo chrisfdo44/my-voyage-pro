@@ -167,3 +167,73 @@ export function OpenBookCalc() {
     </div>
   );
 }
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="glass-panel rounded-3xl p-6 space-y-4">
+      <div className="flex items-center gap-2 text-white font-bold mb-2 text-xs uppercase tracking-widest">
+        <div className="bg-cyan-glow/10 p-1.5 rounded-lg text-cyan-glow">{icon}</div>
+        {title}
+      </div>
+      <div className="space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  unit = "",
+}: {
+  label: string;
+  value: any;
+  unit?: string;
+}) {
+  return (
+    <div className="flex justify-between text-xs">
+      <span className="text-slate-500 font-bold uppercase tracking-widest">
+        {label}
+      </span>
+      <span className="font-mono font-bold text-white">
+        {value}{" "}
+        <span className="text-[10px] text-slate-600">{unit}</span>
+      </span>
+    </div>
+  );
+}
+
+function Input({
+  label,
+  name,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  value: any;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+        {label}
+      </label>
+      <input
+        type="number"
+        step="any"
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-4 py-2 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
+        placeholder="0.00"
+      />
+    </div>
+  );
+}
