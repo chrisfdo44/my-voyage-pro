@@ -1,37 +1,76 @@
 import React, { useState } from "react";
 import { Navigation, Info, DollarSign, Clock, Fuel } from "lucide-react";
 
+type VoyageInputs = {
+  cargoQty: string;
+  loadRate: string;
+  dischargeRate: string;
+  extraDays: string;
+  pda: string;
+  otherExpenses: string;
+  vlsfoRate: string;
+  ladenDays: string;
+  ballastDays: string;
+  seaConsumption: string;
+  workingConsumption: string;
+  idleConsumption: string;
+  hire: string;
+  addcom: string;
+};
+
 export function VoyageCalc() {
-  const [inputs, setInputs] = useState({
-    cargoQty: 0,
-    loadRate: 0,
-    dischargeRate: 0,
-    extraDays: 0,
-    pda: 0,
-    otherExpenses: 0,
-    vlsfoRate: 0,
-    ladenDays: 0,
-    ballastDays: 0,
-    seaConsumption: 0,
-    workingConsumption: 0,
-    idleConsumption: 0,
-    hire: 0,
-    addcom: 0,
+  // IMPORTANT: keep these as STRINGS so the user can clear the field (empty string).
+  const [inputs, setInputs] = useState<VoyageInputs>({
+    cargoQty: "",
+    loadRate: "",
+    dischargeRate: "",
+    extraDays: "",
+    pda: "",
+    otherExpenses: "",
+    vlsfoRate: "",
+    ladenDays: "",
+    ballastDays: "",
+    seaConsumption: "",
+    workingConsumption: "",
+    idleConsumption: "",
+    hire: "",
+    addcom: "",
   });
 
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
+  // Convert "" -> 0, otherwise Number(...)
+  const toNum = (v: string) => (v === "" ? 0 : Number(v));
+
   const calculate = async () => {
     try {
       setLoading(true);
       setError("");
 
+      // Convert to numeric payload only here
+      const payload = {
+        cargoQty: toNum(inputs.cargoQty),
+        loadRate: toNum(inputs.loadRate),
+        dischargeRate: toNum(inputs.dischargeRate),
+        extraDays: toNum(inputs.extraDays),
+        pda: toNum(inputs.pda),
+        otherExpenses: toNum(inputs.otherExpenses),
+        vlsfoRate: toNum(inputs.vlsfoRate),
+        ladenDays: toNum(inputs.ladenDays),
+        ballastDays: toNum(inputs.ballastDays),
+        seaConsumption: toNum(inputs.seaConsumption),
+        workingConsumption: toNum(inputs.workingConsumption),
+        idleConsumption: toNum(inputs.idleConsumption),
+        hire: toNum(inputs.hire),
+        addcom: toNum(inputs.addcom),
+      };
+
       const res = await fetch("/api/calculate-voyage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inputs),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -50,9 +89,10 @@ export function VoyageCalc() {
     }
   };
 
+  // Keep raw string so empty is allowed
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setInputs((prev) => ({ ...prev, [name]: value === "" ? 0 : Number(value) }));
+    setInputs((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -79,16 +119,21 @@ export function VoyageCalc() {
                 <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
                 Cargo & Port Logistics
               </h3>
+
               <Input label="Cargo Quantity (MT)" name="cargoQty" value={inputs.cargoQty} onChange={handleChange} />
+
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Load Rate" name="loadRate" value={inputs.loadRate} onChange={handleChange} />
                 <Input label="Discharge Rate" name="dischargeRate" value={inputs.dischargeRate} onChange={handleChange} />
               </div>
+
               <Input label="Extra Days" name="extraDays" value={inputs.extraDays} onChange={handleChange} />
+
               <div className="grid grid-cols-2 gap-4">
                 <Input label="PDA ($)" name="pda" value={inputs.pda} onChange={handleChange} />
                 <Input label="Other Exp ($)" name="otherExpenses" value={inputs.otherExpenses} onChange={handleChange} />
               </div>
+
               <Input label="Bunker Price (VLSFO)" name="vlsfoRate" value={inputs.vlsfoRate} onChange={handleChange} />
             </div>
 
@@ -97,15 +142,19 @@ export function VoyageCalc() {
                 <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
                 Voyage Parameters
               </h3>
+
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Laden Days" name="ladenDays" value={inputs.ladenDays} onChange={handleChange} />
                 <Input label="Ballast Days" name="ballastDays" value={inputs.ballastDays} onChange={handleChange} />
               </div>
+
               <Input label="Sea Consumption (MT/day)" name="seaConsumption" value={inputs.seaConsumption} onChange={handleChange} />
+
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Working Cons." name="workingConsumption" value={inputs.workingConsumption} onChange={handleChange} />
                 <Input label="Idle Cons." name="idleConsumption" value={inputs.idleConsumption} onChange={handleChange} />
               </div>
+
               <Input label="Vessel Hire ($/day)" name="hire" value={inputs.hire} onChange={handleChange} />
               <Input label="ADDCOM (e.g. 0.0375)" name="addcom" value={inputs.addcom} onChange={handleChange} />
             </div>
@@ -198,20 +247,23 @@ function Input({
 }: {
   label: string;
   name: string;
-  value: any;
-  onChange: any;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+        {label}
+      </label>
       <input
         type="number"
         step="any"
+        inputMode="decimal"
         name={name}
         value={value}
         onChange={onChange}
         className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
-        placeholder="0.00"
+        placeholder=""
       />
     </div>
   );
