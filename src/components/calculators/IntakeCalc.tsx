@@ -1,18 +1,33 @@
 import React, { useState } from "react";
 import { Anchor, Info } from "lucide-react";
 
+type IntakeInputs = {
+  deadweight: string;
+  draft: string;
+  tpc: string;
+  grainCapacity: string;
+  sf: string;
+  draftRestriction: string;
+  waterDensity: string;
+  vslConstant: string;
+  qty: string;
+  tolerance: string;
+  tropical: "No" | "Yes";
+};
+
 export function IntakeCalc() {
-  const [inputs, setInputs] = useState({
-    deadweight: 0,
-    draft: 0,
-    tpc: 0,
-    grainCapacity: 0,
-    sf: 0,
-    draftRestriction: 0,
-    waterDensity: 1.025,
-    vslConstant: 0,
-    qty: 0,
-    tolerance: 0,
+  // Keep numeric inputs as STRINGS so user can clear field (empty string).
+  const [inputs, setInputs] = useState<IntakeInputs>({
+    deadweight: "",
+    draft: "",
+    tpc: "",
+    grainCapacity: "",
+    sf: "",
+    draftRestriction: "",
+    waterDensity: "1.025",
+    vslConstant: "",
+    qty: "",
+    tolerance: "",
     tropical: "No",
   });
 
@@ -20,15 +35,32 @@ export function IntakeCalc() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
+  const toNum = (v: string) => (v === "" ? 0 : Number(v));
+
   const calculate = async () => {
     try {
       setLoading(true);
       setError("");
 
+      // Convert to numeric payload ONLY here
+      const payload = {
+        deadweight: toNum(inputs.deadweight),
+        draft: toNum(inputs.draft),
+        tpc: toNum(inputs.tpc),
+        grainCapacity: toNum(inputs.grainCapacity),
+        sf: toNum(inputs.sf),
+        draftRestriction: toNum(inputs.draftRestriction),
+        waterDensity: toNum(inputs.waterDensity),
+        vslConstant: toNum(inputs.vslConstant),
+        qty: toNum(inputs.qty),
+        tolerance: toNum(inputs.tolerance),
+        tropical: inputs.tropical,
+      };
+
       const res = await fetch("/api/calculate-intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inputs),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -47,21 +79,16 @@ export function IntakeCalc() {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    // Keep numbers as numbers (except tropical which is a string)
     if (name === "tropical") {
-      setInputs((prev) => ({ ...prev, [name]: value }));
+      setInputs((prev) => ({ ...prev, tropical: value as "No" | "Yes" }));
       return;
     }
 
-    setInputs((prev) => ({
-      ...prev,
-      [name]: value === "" ? 0 : Number(value),
-    }));
+    // keep as raw string (allow "")
+    setInputs((prev) => ({ ...prev, [name]: value } as IntakeInputs));
   };
 
   return (
@@ -131,9 +158,7 @@ export function IntakeCalc() {
             {loading ? "Processing..." : "Execute Analysis"}
           </button>
 
-          {error ? (
-            <p className="mt-4 text-xs text-red-400 font-mono">{error}</p>
-          ) : null}
+          {error ? <p className="mt-4 text-xs text-red-400 font-mono">{error}</p> : null}
         </div>
 
         <div className="space-y-6">
@@ -175,8 +200,8 @@ function Input({
 }: {
   label: string;
   name: string;
-  value: any;
-  onChange: any;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -186,11 +211,12 @@ function Input({
       <input
         type="number"
         step="any"
+        inputMode="decimal"
         name={name}
         value={value}
         onChange={onChange}
         className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
-        placeholder="0.00"
+        placeholder=""
       />
     </div>
   );
