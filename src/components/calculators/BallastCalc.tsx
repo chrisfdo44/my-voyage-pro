@@ -1,29 +1,49 @@
 import React, { useState } from "react";
 import { Ship, Info, TrendingUp } from "lucide-react";
 
+type BallastInputs = {
+  ballastDays: string;
+  voyageDays: string;
+  bunkerPrice: string;
+  consumptionBallast: string;
+  hireBssAps: string;
+  ballastBonus: string;
+};
+
 export function BallastCalc() {
-  const [inputs, setInputs] = useState({
-    ballastDays: 0,
-    voyageDays: 0,
-    bunkerPrice: 0,
-    consumptionBallast: 0,
-    hireBssAps: 0,
-    ballastBonus: 0,
+  const [inputs, setInputs] = useState<BallastInputs>({
+    ballastDays: "",
+    voyageDays: "",
+    bunkerPrice: "",
+    consumptionBallast: "",
+    hireBssAps: "",
+    ballastBonus: "",
   });
 
   const [result, setResult] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
+
+  const toNum = (v: string) => (v === "" ? 0 : Number(v));
 
   const calculate = async () => {
     try {
       setLoading(true);
       setError("");
 
+      const payload = {
+        ballastDays: toNum(inputs.ballastDays),
+        voyageDays: toNum(inputs.voyageDays),
+        bunkerPrice: toNum(inputs.bunkerPrice),
+        consumptionBallast: toNum(inputs.consumptionBallast),
+        hireBssAps: toNum(inputs.hireBssAps),
+        ballastBonus: toNum(inputs.ballastBonus),
+      };
+
       const res = await fetch("/api/calculate-ballast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inputs),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -44,10 +64,7 @@ export function BallastCalc() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setInputs((prev) => ({
-      ...prev,
-      [name]: value === "" ? 0 : Number(value),
-    }));
+    setInputs((prev) => ({ ...prev, [name]: value } as BallastInputs));
   };
 
   return (
@@ -79,12 +96,7 @@ export function BallastCalc() {
           </div>
 
           <Input label="Bunker Price ($)" name="bunkerPrice" value={inputs.bunkerPrice} onChange={handleChange} />
-          <Input
-            label="Ballast Consumption (MT/day)"
-            name="consumptionBallast"
-            value={inputs.consumptionBallast}
-            onChange={handleChange}
-          />
+          <Input label="Ballast Consumption (MT/day)" name="consumptionBallast" value={inputs.consumptionBallast} onChange={handleChange} />
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6">
             <Input label="Hire Basis APS ($)" name="hireBssAps" value={inputs.hireBssAps} onChange={handleChange} />
@@ -99,7 +111,7 @@ export function BallastCalc() {
             {loading ? "Processing..." : "Calculate Gross DOP Hire"}
           </button>
 
-          {error ? <p className="mt-2 text-xs text-red-400 font-mono">{error}</p> : null}
+          {error ? <p className="text-xs text-red-400 font-mono">{error}</p> : null}
         </div>
 
         <div className="space-y-6">
@@ -142,8 +154,8 @@ function Input({
 }: {
   label: string;
   name: string;
-  value: any;
-  onChange: any;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -151,11 +163,12 @@ function Input({
       <input
         type="number"
         step="any"
+        inputMode="decimal"
         name={name}
         value={value}
         onChange={onChange}
         className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
-        placeholder="0.00"
+        placeholder=""
       />
     </div>
   );
