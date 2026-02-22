@@ -1,42 +1,90 @@
 import React, { useState } from "react";
-import { FileText, Info, ArrowRight } from "lucide-react";
+import { FileText, ArrowRight } from "lucide-react";
+
+type OpenBookInputs = {
+  baseFreight: string;
+  quantity: string;
+  initialRate: string;
+  revisedRate: string;
+  additionalDays: string;
+  extraMiles: string;
+  extraExpenses: string;
+  ballastSpeed: string;
+  ladenSpeed: string;
+  ballastVLSFO: string;
+  ladenVLSFO: string;
+  seaLSMGO: string;
+  idleVLSFO: string;
+  workingVLSFO: string;
+  portLSMGO: string;
+  vlsfoCost: string;
+  lsmgoCost: string;
+  vesselHire: string;
+  addcom: string;
+};
 
 export function OpenBookCalc() {
-  const [inputs, setInputs] = useState({
-    baseFreight: 0,
-    quantity: 0,
-    initialRate: 0,
-    revisedRate: 0,
-    additionalDays: 0,
-    extraMiles: 0,
-    extraExpenses: 0,
-    ballastSpeed: 0,
-    ladenSpeed: 0,
-    ballastVLSFO: 0,
-    ladenVLSFO: 0,
-    seaLSMGO: 0,
-    idleVLSFO: 0,
-    workingVLSFO: 0,
-    portLSMGO: 0,
-    vlsfoCost: 0,
-    lsmgoCost: 0,
-    vesselHire: 0,
-    addcom: 0,
+  // Keep numeric inputs as STRINGS so user can clear field (empty string).
+  const [inputs, setInputs] = useState<OpenBookInputs>({
+    baseFreight: "",
+    quantity: "",
+    initialRate: "",
+    revisedRate: "",
+    additionalDays: "",
+    extraMiles: "",
+    extraExpenses: "",
+    ballastSpeed: "",
+    ladenSpeed: "",
+    ballastVLSFO: "",
+    ladenVLSFO: "",
+    seaLSMGO: "",
+    idleVLSFO: "",
+    workingVLSFO: "",
+    portLSMGO: "",
+    vlsfoCost: "",
+    lsmgoCost: "",
+    vesselHire: "",
+    addcom: "",
   });
 
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const toNum = (v: string) => (v === "" ? 0 : Number(v));
+
   const calculate = async () => {
     try {
       setLoading(true);
       setError("");
 
+      // Convert to numeric payload ONLY here
+      const payload = {
+        baseFreight: toNum(inputs.baseFreight),
+        quantity: toNum(inputs.quantity),
+        initialRate: toNum(inputs.initialRate),
+        revisedRate: toNum(inputs.revisedRate),
+        additionalDays: toNum(inputs.additionalDays),
+        extraMiles: toNum(inputs.extraMiles),
+        extraExpenses: toNum(inputs.extraExpenses),
+        ballastSpeed: toNum(inputs.ballastSpeed),
+        ladenSpeed: toNum(inputs.ladenSpeed),
+        ballastVLSFO: toNum(inputs.ballastVLSFO),
+        ladenVLSFO: toNum(inputs.ladenVLSFO),
+        seaLSMGO: toNum(inputs.seaLSMGO),
+        idleVLSFO: toNum(inputs.idleVLSFO),
+        workingVLSFO: toNum(inputs.workingVLSFO),
+        portLSMGO: toNum(inputs.portLSMGO),
+        vlsfoCost: toNum(inputs.vlsfoCost),
+        lsmgoCost: toNum(inputs.lsmgoCost),
+        vesselHire: toNum(inputs.vesselHire),
+        addcom: toNum(inputs.addcom),
+      };
+
       const res = await fetch("/api/calculate-openbook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inputs),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -57,10 +105,8 @@ export function OpenBookCalc() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setInputs((prev) => ({
-      ...prev,
-      [name]: value === "" ? 0 : Number(value),
-    }));
+    // keep as raw string (allow "")
+    setInputs((prev) => ({ ...prev, [name]: value } as OpenBookInputs));
   };
 
   return (
@@ -82,7 +128,6 @@ export function OpenBookCalc() {
       <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
         <div className="lg:col-span-3 space-y-6 sm:space-y-8">
           <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
-
             <Section title="Cargo Logistics" icon={<FileText className="w-4 h-4" />}>
               <Input label="Base Freight ($)" name="baseFreight" value={inputs.baseFreight} onChange={handleChange} />
               <Input label="Quantity (MT)" name="quantity" value={inputs.quantity} onChange={handleChange} />
@@ -114,16 +159,13 @@ export function OpenBookCalc() {
               <button
                 onClick={calculate}
                 disabled={loading}
-                className="w-full mt-4 py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)] disabled:opacity-60"
+                className="w-full mt-4 py-4 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_30px_rgba(34,211,238,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? "Processing..." : "Recalculate Audit"}
               </button>
 
-              {error && (
-                <p className="text-xs text-red-400 font-mono mt-2">{error}</p>
-              )}
+              {error ? <p className="text-xs text-red-400 font-mono mt-2">{error}</p> : null}
             </Section>
-
           </div>
         </div>
 
@@ -167,6 +209,7 @@ export function OpenBookCalc() {
     </div>
   );
 }
+
 function Section({
   title,
   icon,
@@ -198,12 +241,9 @@ function Metric({
 }) {
   return (
     <div className="flex justify-between text-xs">
-      <span className="text-slate-500 font-bold uppercase tracking-widest">
-        {label}
-      </span>
+      <span className="text-slate-500 font-bold uppercase tracking-widest">{label}</span>
       <span className="font-mono font-bold text-white">
-        {value}{" "}
-        <span className="text-[10px] text-slate-600">{unit}</span>
+        {value} <span className="text-[10px] text-slate-600">{unit}</span>
       </span>
     </div>
   );
@@ -217,7 +257,7 @@ function Input({
 }: {
   label: string;
   name: string;
-  value: any;
+  value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
@@ -228,11 +268,12 @@ function Input({
       <input
         type="number"
         step="any"
+        inputMode="decimal"
         name={name}
         value={value}
         onChange={onChange}
         className="w-full px-4 py-2 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
-        placeholder="0.00"
+        placeholder=""
       />
     </div>
   );
