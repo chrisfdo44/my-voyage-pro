@@ -20,7 +20,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-navy-deep flex flex-col font-sans text-slate-300">
+    <div className="min-h-screen w-full overflow-x-hidden bg-navy-deep flex flex-col font-sans text-slate-300">
       {/* Header */}
       <header className="bg-navy-deep/80 backdrop-blur-md border-b border-cyan-glow/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
