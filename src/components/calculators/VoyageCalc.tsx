@@ -360,24 +360,35 @@ function MiniCalcModal({
   const [preview, setPreview] = useState<number | null>(null);
   const [calcErr, setCalcErr] = useState<string>("");
 
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+
   React.useEffect(() => {
     if (!open) return;
+
     // reset each open
     setExpr("");
     setPreview(null);
     setCalcErr("");
+
+    // ✅ focus the input so keyboard typing works immediately
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
   }, [open]);
 
   const safeEval = (input: string): number => {
-    // allow only math characters
     const cleaned = input.replace(/\s+/g, "");
     if (cleaned === "") return 0;
+
     if (!/^[0-9+\-*/().]+$/.test(cleaned)) {
       throw new Error("Only numbers and + - * / ( ) are allowed");
     }
+
     // eslint-disable-next-line no-new-func
     const val = Function(`"use strict"; return (${cleaned});`)();
     const num = Number(val);
+
     if (!isFinite(num)) throw new Error("Invalid result");
     return num;
   };
@@ -398,27 +409,72 @@ function MiniCalcModal({
   const backspace = () => setExpr((p) => p.slice(0, -1));
   const clear = () => setExpr("");
 
+  // ✅ keyboard works even without clicking inside the modal
+  const onModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Close
+    if (e.key === "Escape") {
+      e.preventDefault();
+      onClose();
+      return;
+    }
+
+    // Apply
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (calcErr) return;
+      onApply(preview ?? 0);
+      return;
+    }
+
+    // Delete
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      backspace();
+      return;
+    }
+
+    // Clear (optional)
+    if (e.key.toLowerCase() === "c" && (e.ctrlKey || e.metaKey)) {
+      // keep browser copy/paste behavior normal; don't override
+      return;
+    }
+
+    // Allowed characters
+    const allowed = "0123456789.+-*/()";
+    if (e.key.length === 1 && allowed.includes(e.key)) {
+      e.preventDefault();
+      append(e.key);
+    }
+  };
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <button
-        type="button"
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      onKeyDown={onModalKeyDown}
+      tabIndex={-1}
+    >
+      {/* ✅ Backdrop (use div, not button, to avoid focus issues) */}
+      <div
         className="absolute inset-0 bg-black/50"
         onClick={onClose}
-        aria-label="Close mini calculator"
       />
 
       {/* Panel */}
       <div className="relative w-full max-w-sm glass-panel rounded-3xl p-5 sm:p-6 border border-cyan-glow/20 shadow-[0_0_40px_rgba(34,211,238,0.15)]">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-widest text-cyan-glow">{title}</div>
+            <div className="text-xs font-bold uppercase tracking-widest text-cyan-glow">
+              {title}
+            </div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">
               Example: 1200+450*2
             </div>
           </div>
+
           <button
             type="button"
             onClick={onClose}
@@ -430,6 +486,7 @@ function MiniCalcModal({
         </div>
 
         <input
+          ref={inputRef}
           value={expr}
           onChange={(e) => setExpr(e.target.value)}
           className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-2xl outline-none text-white font-mono text-sm"
@@ -461,11 +518,13 @@ function MiniCalcModal({
           <Key label="0" onClick={() => append("0")} />
           <Key label="." onClick={() => append(".")} />
           <Key label="+" onClick={() => append("+")} />
+
           <button
             type="button"
             onClick={backspace}
             className="h-11 rounded-2xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition flex items-center justify-center"
             aria-label="Backspace"
+            title="Backspace"
           >
             <Delete className="w-4 h-4 text-cyan-glow" />
           </button>
@@ -488,6 +547,11 @@ function MiniCalcModal({
           >
             Use Result
           </button>
+        </div>
+
+        {/* Optional quick hint */}
+        <div className="mt-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+          Keys: 0-9 + - * / ( ) • Enter = Use • Esc = Close
         </div>
       </div>
     </div>
