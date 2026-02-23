@@ -1,28 +1,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-/* ✅ Light mode = default tokens */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Light palette */
-  --color-navy-deep: #f7fafc;         /* page bg (light) */
-  --color-cyan-glow: #0891b2;         /* cyan slightly deeper so it’s visible */
+  /* your color tokens (we will override them below) */
   --color-copper: #B87333;
   --color-copper-light: #D4AF37;
   --color-copper-dark: #8B4513;
-}
-
-/* ✅ Dark mode overrides */
-.dark {
   --color-navy-deep: #020617;
   --color-cyan-glow: #22d3ee;
 }
 
-/* Optional: make glass panel adapt */
+/* ✅ LIGHT mode defaults (when .dark is NOT present) */
+:root {
+  --color-navy-deep: #f8fafc;
+  --color-cyan-glow: #0891b2;
+
+  --vp-text: #0f172a;
+  --vp-muted: #475569;
+
+  --vp-panel: rgba(255, 255, 255, 0.75);
+  --vp-panel-border: rgba(8, 145, 178, 0.25);
+}
+
+/* ✅ DARK mode overrides */
+.dark {
+  --color-navy-deep: #020617;
+  --color-cyan-glow: #22d3ee;
+
+  --vp-text: #e2e8f0;
+  --vp-muted: #94a3b8;
+
+  --vp-panel: rgba(15, 23, 42, 0.60);
+  --vp-panel-border: rgba(34, 211, 238, 0.20);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; filter: blur(2px); }
+  50% { opacity: 1; filter: blur(0px); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+
+/* ✅ glass panel adapts to theme now */
 .glass-panel {
-  background: color-mix(in oklab, var(--color-navy-deep) 70%, transparent);
+  background: var(--vp-panel);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in oklab, var(--color-cyan-glow) 30%, transparent);
+  border: 1px solid var(--vp-panel-border);
 }
