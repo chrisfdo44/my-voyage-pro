@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Navigation, Info, DollarSign, Clock, Fuel } from "lucide-react";
+import React, { useRef, useState } from "react";
+import {
+  Navigation,
+  Info,
+  DollarSign,
+  Clock,
+  Fuel,
+  Calculator,
+} from "lucide-react";
 
 type VoyageInputs = {
   cargoQty: string;
@@ -19,7 +26,7 @@ type VoyageInputs = {
 };
 
 export function VoyageCalc() {
-  // IMPORTANT: keep these as STRINGS so the user can clear the field (empty string).
+  // Keep as STRINGS so user can clear fields
   const [inputs, setInputs] = useState<VoyageInputs>({
     cargoQty: "",
     loadRate: "",
@@ -41,7 +48,6 @@ export function VoyageCalc() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
-  // Convert "" -> 0, otherwise Number(...)
   const toNum = (v: string) => (v === "" ? 0 : Number(v));
 
   const calculate = async () => {
@@ -49,7 +55,6 @@ export function VoyageCalc() {
       setLoading(true);
       setError("");
 
-      // Convert to numeric payload only here
       const payload = {
         cargoQty: toNum(inputs.cargoQty),
         loadRate: toNum(inputs.loadRate),
@@ -75,9 +80,7 @@ export function VoyageCalc() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data?.error || `Request failed (${res.status})`);
-      }
+      if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
 
       setResults(data);
     } catch (err: any) {
@@ -89,7 +92,6 @@ export function VoyageCalc() {
     }
   };
 
-  // Keep raw string so empty is allowed
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setInputs((prev) => ({ ...prev, [name]: value }));
@@ -116,7 +118,7 @@ export function VoyageCalc() {
           <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-cyan-glow/10">
             <div className="p-6 sm:p-8 space-y-4 sm:space-y-6">
               <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
+                <div className="w-1 h-1 bg-cyan-glow rounded-full" />
                 Cargo & Port Logistics
               </h3>
 
@@ -129,9 +131,22 @@ export function VoyageCalc() {
 
               <Input label="Extra Days" name="extraDays" value={inputs.extraDays} onChange={handleChange} />
 
+              {/* ✅ PDA + Other Exp with mini calculator */}
               <div className="grid grid-cols-2 gap-4">
-                <Input label="PDA ($)" name="pda" value={inputs.pda} onChange={handleChange} />
-                <Input label="Other Exp ($)" name="otherExpenses" value={inputs.otherExpenses} onChange={handleChange} />
+                <InputWithMiniCalc
+                  label="PDA ($)"
+                  name="pda"
+                  value={inputs.pda}
+                  onChange={handleChange}
+                  onApplyValue={(val) => setInputs((prev) => ({ ...prev, pda: val }))}
+                />
+                <InputWithMiniCalc
+                  label="Other Exp ($)"
+                  name="otherExpenses"
+                  value={inputs.otherExpenses}
+                  onChange={handleChange}
+                  onApplyValue={(val) => setInputs((prev) => ({ ...prev, otherExpenses: val }))}
+                />
               </div>
 
               <Input label="Bunker Price (VLSFO)" name="vlsfoRate" value={inputs.vlsfoRate} onChange={handleChange} />
@@ -139,7 +154,7 @@ export function VoyageCalc() {
 
             <div className="p-6 sm:p-8 space-y-4 sm:space-y-6 bg-cyan-glow/[0.02]">
               <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
+                <div className="w-1 h-1 bg-cyan-glow rounded-full" />
                 Voyage Parameters
               </h3>
 
@@ -265,6 +280,172 @@ function Input({
         className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
         placeholder=""
       />
+    </div>
+  );
+}
+
+/* ---------- Mini Calculator (floating card) ---------- */
+
+function safeEvalExpression(expr: string): number | null {
+  const cleaned = expr.replace(/\s+/g, "");
+  if (!cleaned) return null;
+  if (!/^[0-9+\-*/().]+$/.test(cleaned)) return null;
+
+  try {
+    // eslint-disable-next-line no-new-func
+    const result = Function(`"use strict"; return (${cleaned});`)();
+    const num = Number(result);
+    if (!Number.isFinite(num)) return null;
+    return num;
+  } catch {
+    return null;
+  }
+}
+
+function InputWithMiniCalc({
+  label,
+  name,
+  value,
+  onChange,
+  onApplyValue,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onApplyValue: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [expr, setExpr] = useState("");
+  const [calcError, setCalcError] = useState("");
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  const apply = () => {
+    const res = safeEvalExpression(expr);
+    if (res === null) {
+      setCalcError("Invalid expression");
+      return;
+    }
+    setCalcError("");
+    onApplyValue(String(res));
+    setOpen(false);
+  };
+
+  const tap = (t: string) => {
+    setCalcError("");
+    setExpr((p) => p + t);
+  };
+
+  return (
+    <div className="space-y-2" ref={wrapRef}>
+      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+        {label}
+      </label>
+
+      <div className="relative">
+        <input
+          type="number"
+          step="any"
+          inputMode="decimal"
+          name={name}
+          value={value}
+          onChange={onChange}
+          className="w-full px-4 py-3 pr-12 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
+          placeholder=""
+        />
+
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition"
+          aria-label="Mini calculator"
+          title="Mini calculator"
+        >
+          <Calculator className="w-4 h-4 text-cyan-glow" />
+        </button>
+
+        {open && (
+          <div className="absolute right-0 mt-2 w-[260px] z-50 glass-panel rounded-2xl p-4 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.6)]">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+              Mini Calculator
+            </div>
+
+            <input
+              value={expr}
+              onChange={(e) => {
+                setExpr(e.target.value);
+                setCalcError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") apply();
+              }}
+              className="w-full px-3 py-2 bg-navy-deep/40 border border-cyan-glow/10 rounded-xl outline-none text-white text-sm font-mono"
+              placeholder="e.g. 1200+450*2"
+              autoFocus
+            />
+
+            {calcError ? (
+              <div className="mt-2 text-[10px] font-mono text-red-400">{calcError}</div>
+            ) : null}
+
+            <div className="grid grid-cols-4 gap-2 mt-3">
+              {["7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", ".", "(", ")"].map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => tap(k)}
+                  className="py-2 rounded-xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition text-white font-mono text-sm"
+                >
+                  {k}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setExpr("");
+                  setCalcError("");
+                }}
+                className="col-span-2 py-2 rounded-xl border border-cyan-glow/10 bg-white/5 hover:bg-white/10 transition text-white text-xs font-bold uppercase tracking-widest"
+              >
+                Clear
+              </button>
+
+              <button
+                type="button"
+                onClick={() => tap("+")}
+                className="py-2 rounded-xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition text-white font-mono text-sm"
+              >
+                +
+              </button>
+
+              <button
+                type="button"
+                onClick={apply}
+                className="py-2 rounded-xl bg-cyan-glow text-navy-deep font-black uppercase tracking-widest text-xs hover:bg-white transition shadow-[0_0_25px_rgba(34,211,238,0.25)]"
+              >
+                =
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
