@@ -212,7 +212,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
               <Ship className="w-6 h-6 text-cyan-glow" />
               <span className="text-lg font-bold text-white tracking-tighter uppercase">VoyagePro</span>
             </div>
-            <div className="flex gap-8 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="flex gap-8 text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-muted)]">
               <a href="#" className="hover:text-cyan-glow transition-colors">Privacy</a>
               <a href="#" className="hover:text-cyan-glow transition-colors">Terms</a>
               <a href="#" className="hover:text-cyan-glow transition-colors">Support</a>
