@@ -58,3 +58,21 @@
   backdrop-filter: blur(12px);
   border: 1px solid var(--vp-panel-border);
 }
+
+/* ✅ Base typography defaults using theme vars */
+html, body {
+  color: var(--vp-text);
+  background: var(--color-navy-deep);
+}
+
+/* Make common muted text readable in both themes */
+.text-slate-500,
+.text-slate-600,
+.text-slate-400 {
+  color: var(--vp-muted) !important;
+}
+
+/* If you used text-white in many places, make it theme-safe */
+.text-white {
+  color: var(--vp-text) !important;
+}
