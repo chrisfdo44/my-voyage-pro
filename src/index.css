@@ -1,50 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+/* ✅ Light mode = default tokens */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Light palette */
+  --color-navy-deep: #f7fafc;         /* page bg (light) */
+  --color-cyan-glow: #0891b2;         /* cyan slightly deeper so it’s visible */
   --color-copper: #B87333;
   --color-copper-light: #D4AF37;
   --color-copper-dark: #8B4513;
+}
+
+/* ✅ Dark mode overrides */
+.dark {
   --color-navy-deep: #020617;
   --color-cyan-glow: #22d3ee;
 }
 
-:root {
-  --app-bg: 248 250 252;      /* light background */
-  --app-text: 15 23 42;       /* light text */
-  --panel-bg: 255 255 255;    /* light panels */
-  --panel-border: 148 163 184;/* slate-400-ish border */
-}
-
-html.dark {
-  --app-bg: 2 6 23;           /* navy deep */
-  --app-text: 203 213 225;    /* slate-300 */
-  --panel-bg: 15 23 42;       /* slate-900-ish panel */
-  --panel-border: 34 211 238; /* cyan glow */
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; filter: blur(2px); }
-  50% { opacity: 1; filter: blur(0px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
+/* Optional: make glass panel adapt */
 .glass-panel {
-  background: rgba(var(--panel-bg), 0.60);
+  background: color-mix(in oklab, var(--color-navy-deep) 70%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--panel-border), 0.20);
+  border: 1px solid color-mix(in oklab, var(--color-cyan-glow) 30%, transparent);
 }
