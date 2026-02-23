@@ -13,20 +13,32 @@ type ThemeMode = "dark" | "light";
 export function Layout({ children, currentView, setView }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  // ✅ Theme state
-  const [theme, setTheme] = React.useState<ThemeMode>(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark" || saved === "light") return saved;
-    // default: dark (since your site design is dark-first)
-    return "dark";
-  });
+  // ✅ Start default as dark, then read localStorage safely in useEffect
+  const [theme, setTheme] = React.useState<ThemeMode>("dark");
 
-  // ✅ Apply theme class to <html>
   React.useEffect(() => {
-    const root = document.documentElement; // <html>
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-    localStorage.setItem("theme", theme);
+    try {
+      const saved = localStorage.getItem("vp-theme");
+      if (saved === "dark" || saved === "light") {
+        setTheme(saved);
+        document.documentElement.classList.toggle("dark", saved === "dark");
+      } else {
+        // default dark
+        document.documentElement.classList.add("dark");
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  React.useEffect(() => {
+    // ✅ Apply theme class to <html>
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    try {
+      localStorage.setItem("vp-theme", theme);
+    } catch {
+      // ignore
+    }
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
@@ -45,6 +57,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
       <header className="bg-navy-deep/80 backdrop-blur-md border-b border-cyan-glow/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
+            {/* Brand */}
             <div
               className="flex items-center gap-3 cursor-pointer group"
               onClick={() => setView("home")}
@@ -53,7 +66,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                 <Ship className="w-5 h-5 text-cyan-glow group-hover:text-navy-deep" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-lg font-black text-white tracking-tighter uppercase">
+                <span className="text-lg font-black tracking-tighter uppercase text-[color:var(--vp-text)]">
                   VoyagePro
                 </span>
                 <span className="text-[8px] font-bold text-cyan-glow tracking-[0.3em] uppercase">
@@ -72,7 +85,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                     "text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative py-2",
                     currentView === item.id
                       ? "text-cyan-glow after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-cyan-glow shadow-[0_10px_20px_-10px_rgba(34,211,238,0.5)]"
-                      : "text-slate-500 hover:text-white"
+                      : "text-[color:var(--vp-muted)] hover:text-[color:var(--vp-text)]"
                   )}
                 >
                   {item.label}
@@ -82,7 +95,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
 
             {/* Desktop Right Side */}
             <div className="hidden md:flex items-center gap-3">
-              {/* ✅ Theme Toggle Button */}
+              {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition"
@@ -101,9 +114,8 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
               </div>
             </div>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile buttons */}
             <div className="md:hidden flex items-center gap-2">
-              {/* ✅ Theme Toggle for mobile header too */}
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition"
@@ -119,6 +131,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
               <button
                 className="p-2 text-cyan-glow"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label="Open menu"
               >
                 {isMenuOpen ? <X /> : <Menu />}
               </button>
@@ -139,13 +152,12 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                 <div className="bg-cyan-glow/10 p-2 rounded-lg border border-cyan-glow/20">
                   <Ship className="w-6 h-6 text-cyan-glow" />
                 </div>
-                <span className="text-xl font-black text-white tracking-tighter uppercase">
+                <span className="text-xl font-black tracking-tighter uppercase text-[color:var(--vp-text)]">
                   VoyagePro
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                {/* ✅ Theme toggle inside menu */}
                 <button
                   onClick={toggleTheme}
                   className="p-2 rounded-xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition"
@@ -161,6 +173,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                 <button
                   className="p-2 text-cyan-glow hover:bg-cyan-glow/10 rounded-full transition-colors"
                   onClick={() => setIsMenuOpen(false)}
+                  aria-label="Close menu"
                 >
                   <X className="w-8 h-8" />
                 </button>
@@ -177,7 +190,9 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                   }}
                   className={cn(
                     "text-4xl font-black uppercase tracking-tight text-left transition-all duration-300 flex items-center gap-4 py-2",
-                    currentView === item.id ? "text-cyan-glow" : "text-slate-600 hover:text-white"
+                    currentView === item.id
+                      ? "text-cyan-glow"
+                      : "text-[color:var(--vp-muted)] hover:text-[color:var(--vp-text)]"
                   )}
                 >
                   <span className="text-xs font-mono opacity-20">0{index + 1}</span>
@@ -191,10 +206,16 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                 <div className="w-1.5 h-1.5 rounded-full bg-cyan-glow animate-pulse"></div>
                 System Status: Online
               </div>
-              <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-600">
-                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-                <a href="#" className="hover:text-white transition-colors">Technical Support</a>
+              <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-muted)]">
+                <a href="#" className="hover:text-[color:var(--vp-text)] transition-colors">
+                  Privacy Policy
+                </a>
+                <a href="#" className="hover:text-[color:var(--vp-text)] transition-colors">
+                  Terms of Service
+                </a>
+                <a href="#" className="hover:text-[color:var(--vp-text)] transition-colors">
+                  Technical Support
+                </a>
               </div>
             </div>
           </div>
@@ -210,14 +231,24 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2">
               <Ship className="w-6 h-6 text-cyan-glow" />
-              <span className="text-lg font-bold text-white tracking-tighter uppercase">VoyagePro</span>
+              <span className="text-lg font-bold tracking-tighter uppercase text-[color:var(--vp-text)]">
+                VoyagePro
+              </span>
             </div>
+
             <div className="flex gap-8 text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-muted)]">
-              <a href="#" className="hover:text-cyan-glow transition-colors">Privacy</a>
-              <a href="#" className="hover:text-cyan-glow transition-colors">Terms</a>
-              <a href="#" className="hover:text-cyan-glow transition-colors">Support</a>
+              <a href="#" className="hover:text-cyan-glow transition-colors">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-cyan-glow transition-colors">
+                Terms
+              </a>
+              <a href="#" className="hover:text-cyan-glow transition-colors">
+                Support
+              </a>
             </div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
+
+            <div className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-muted)]">
               © 2026 VoyagePro Maritime. v4.2.0-stable
             </div>
           </div>
