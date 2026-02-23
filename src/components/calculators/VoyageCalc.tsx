@@ -1,12 +1,5 @@
-import React, { useRef, useState } from "react";
-import {
-  Navigation,
-  Info,
-  DollarSign,
-  Clock,
-  Fuel,
-  Calculator,
-} from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { Navigation, Info, DollarSign, Clock, Fuel, Calculator, X, Delete } from "lucide-react";
 
 type VoyageInputs = {
   cargoQty: string;
@@ -25,8 +18,9 @@ type VoyageInputs = {
   addcom: string;
 };
 
+type MiniTarget = "pda" | "otherExpenses";
+
 export function VoyageCalc() {
-  // Keep as STRINGS so user can clear fields
   const [inputs, setInputs] = useState<VoyageInputs>({
     cargoQty: "",
     loadRate: "",
@@ -47,6 +41,10 @@ export function VoyageCalc() {
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
+
+  // Mini calculator modal state
+  const [miniOpen, setMiniOpen] = useState(false);
+  const [miniTarget, setMiniTarget] = useState<MiniTarget>("pda");
 
   const toNum = (v: string) => (v === "" ? 0 : Number(v));
 
@@ -79,7 +77,6 @@ export function VoyageCalc() {
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
 
       setResults(data);
@@ -95,6 +92,20 @@ export function VoyageCalc() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setInputs((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const openMini = (target: MiniTarget) => {
+    setMiniTarget(target);
+    setMiniOpen(true);
+  };
+
+  const applyMiniResult = (value: number) => {
+    // put the result into PDA or Other Exp
+    setInputs((prev) => ({
+      ...prev,
+      [miniTarget]: String(isFinite(value) ? value : 0),
+    }));
+    setMiniOpen(false);
   };
 
   return (
@@ -116,9 +127,10 @@ export function VoyageCalc() {
       <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
         <div className="lg:col-span-3 glass-panel rounded-3xl overflow-hidden">
           <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-cyan-glow/10">
+            {/* LEFT */}
             <div className="p-6 sm:p-8 space-y-4 sm:space-y-6">
               <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                <div className="w-1 h-1 bg-cyan-glow rounded-full" />
+                <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
                 Cargo & Port Logistics
               </h3>
 
@@ -131,30 +143,31 @@ export function VoyageCalc() {
 
               <Input label="Extra Days" name="extraDays" value={inputs.extraDays} onChange={handleChange} />
 
-              {/* ✅ PDA + Other Exp with mini calculator */}
+              {/* PDA + Other Exp with mini-calc icons */}
               <div className="grid grid-cols-2 gap-4">
                 <InputWithMiniCalc
                   label="PDA ($)"
                   name="pda"
                   value={inputs.pda}
                   onChange={handleChange}
-                  onApplyValue={(val) => setInputs((prev) => ({ ...prev, pda: val }))}
+                  onMini={() => openMini("pda")}
                 />
                 <InputWithMiniCalc
                   label="Other Exp ($)"
                   name="otherExpenses"
                   value={inputs.otherExpenses}
                   onChange={handleChange}
-                  onApplyValue={(val) => setInputs((prev) => ({ ...prev, otherExpenses: val }))}
+                  onMini={() => openMini("otherExpenses")}
                 />
               </div>
 
               <Input label="Bunker Price (VLSFO)" name="vlsfoRate" value={inputs.vlsfoRate} onChange={handleChange} />
             </div>
 
+            {/* RIGHT */}
             <div className="p-6 sm:p-8 space-y-4 sm:space-y-6 bg-cyan-glow/[0.02]">
               <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                <div className="w-1 h-1 bg-cyan-glow rounded-full" />
+                <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
                 Voyage Parameters
               </h3>
 
@@ -188,6 +201,7 @@ export function VoyageCalc() {
           </div>
         </div>
 
+        {/* RESULTS */}
         <div className="space-y-6">
           {results ? (
             <div className="glass-panel rounded-3xl p-6 sm:p-8 border-l-4 border-l-cyan-glow space-y-6 sm:space-y-8">
@@ -196,8 +210,7 @@ export function VoyageCalc() {
                   <Clock className="w-3 h-3 text-cyan-glow" /> Total Duration
                 </div>
                 <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tighter">
-                  {Number(results.totalDuration || 0).toFixed(2)}{" "}
-                  <span className="text-xs text-slate-500">DAYS</span>
+                  {Number(results.totalDuration || 0).toFixed(2)} <span className="text-xs text-slate-500">DAYS</span>
                 </div>
               </div>
 
@@ -220,39 +233,41 @@ export function VoyageCalc() {
               </div>
 
               <div className="pt-6 sm:pt-8 border-t border-cyan-glow/10">
-                <div className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-2">
-                  Target Freight Rate
-                </div>
+                <div className="text-cyan-glow text-[10px] font-bold uppercase tracking-widest mb-2">Target Freight Rate</div>
                 <div className="text-4xl sm:text-5xl font-mono font-bold text-cyan-glow tracking-tighter">
                   ${Number(results.freight || 0).toFixed(2)}
                 </div>
-                <div className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">
-                  Per Metric Ton
-                </div>
+                <div className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Per Metric Ton</div>
               </div>
             </div>
           ) : (
             <div className="glass-panel rounded-3xl border border-dashed border-cyan-glow/20 p-8 text-center flex flex-col items-center justify-center h-full min-h-[300px] sm:min-h-[400px]">
               <Navigation className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-glow/10 mb-4 animate-pulse" />
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-                Awaiting Operational Data
-              </p>
+              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Awaiting Operational Data</p>
             </div>
           )}
 
           <div className="glass-panel rounded-3xl p-6">
             <div className="flex items-start gap-3 text-slate-400 text-xs leading-relaxed">
               <Info className="w-4 h-4 text-cyan-glow shrink-0 mt-0.5" />
-              <p>
-                Calculations include standard commissions and bunker adjustments. System utilizes real-time market indices for estimation.
-              </p>
+              <p>Calculations include standard commissions and bunker adjustments. System utilizes real-time market indices for estimation.</p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ✅ Centered mini calculator modal */}
+      <MiniCalcModal
+        open={miniOpen}
+        onClose={() => setMiniOpen(false)}
+        onApply={applyMiniResult}
+        title={miniTarget === "pda" ? "Mini Calculator → PDA" : "Mini Calculator → Other Exp"}
+      />
     </div>
   );
 }
+
+/* ----------------------------- Inputs ----------------------------- */
 
 function Input({
   label,
@@ -267,9 +282,7 @@ function Input({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
-        {label}
-      </label>
+      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
       <input
         type="number"
         step="any"
@@ -284,168 +297,211 @@ function Input({
   );
 }
 
-/* ---------- Mini Calculator (floating card) ---------- */
-
-function safeEvalExpression(expr: string): number | null {
-  const cleaned = expr.replace(/\s+/g, "");
-  if (!cleaned) return null;
-  if (!/^[0-9+\-*/().]+$/.test(cleaned)) return null;
-
-  try {
-    // eslint-disable-next-line no-new-func
-    const result = Function(`"use strict"; return (${cleaned});`)();
-    const num = Number(result);
-    if (!Number.isFinite(num)) return null;
-    return num;
-  } catch {
-    return null;
-  }
-}
-
 function InputWithMiniCalc({
   label,
   name,
   value,
   onChange,
-  onApplyValue,
+  onMini,
 }: {
   label: string;
   name: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onApplyValue: (val: string) => void;
+  onMini: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [expr, setExpr] = useState("");
-  const [calcError, setCalcError] = useState("");
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, []);
-
-  const apply = () => {
-    const res = safeEvalExpression(expr);
-    if (res === null) {
-      setCalcError("Invalid expression");
-      return;
-    }
-    setCalcError("");
-    onApplyValue(String(res));
-    setOpen(false);
-  };
-
-  const tap = (t: string) => {
-    setCalcError("");
-    setExpr((p) => p + t);
-  };
-
   return (
-    <div className="space-y-2" ref={wrapRef}>
-      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
-        {label}
-      </label>
-
-      <div className="relative">
-        <input
-          type="number"
-          step="any"
-          inputMode="decimal"
-          name={name}
-          value={value}
-          onChange={onChange}
-          className="w-full px-4 py-3 pr-12 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
-          placeholder=""
-        />
-
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition"
-          aria-label="Mini calculator"
+          onClick={onMini}
+          className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-cyan-glow/15 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition"
+          aria-label="Open mini calculator"
           title="Mini calculator"
         >
           <Calculator className="w-4 h-4 text-cyan-glow" />
         </button>
+      </div>
 
-        {open && (
-          <div className="absolute right-0 mt-2 w-[260px] z-50 glass-panel rounded-2xl p-4 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.6)]">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
-              Mini Calculator
-            </div>
+      <input
+        type="number"
+        step="any"
+        inputMode="decimal"
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-white text-sm font-mono"
+        placeholder=""
+      />
+    </div>
+  );
+}
 
-            <input
-              value={expr}
-              onChange={(e) => {
-                setExpr(e.target.value);
-                setCalcError("");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") apply();
-              }}
-              className="w-full px-3 py-2 bg-navy-deep/40 border border-cyan-glow/10 rounded-xl outline-none text-white text-sm font-mono"
-              placeholder="e.g. 1200+450*2"
-              autoFocus
-            />
+/* ------------------------ Mini Calculator Modal ------------------------ */
+/**
+ * Safe simple expression calculator:
+ * - supports digits, ., + - * / ( )
+ * - blocks other characters
+ */
+function MiniCalcModal({
+  open,
+  onClose,
+  onApply,
+  title,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onApply: (value: number) => void;
+  title: string;
+}) {
+  const [expr, setExpr] = useState("");
+  const [preview, setPreview] = useState<number | null>(null);
+  const [calcErr, setCalcErr] = useState<string>("");
 
-            {calcError ? (
-              <div className="mt-2 text-[10px] font-mono text-red-400">{calcError}</div>
-            ) : null}
+  React.useEffect(() => {
+    if (!open) return;
+    // reset each open
+    setExpr("");
+    setPreview(null);
+    setCalcErr("");
+  }, [open]);
 
-            <div className="grid grid-cols-4 gap-2 mt-3">
-              {["7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", ".", "(", ")"].map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => tap(k)}
-                  className="py-2 rounded-xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition text-white font-mono text-sm"
-                >
-                  {k}
-                </button>
-              ))}
+  const safeEval = (input: string): number => {
+    // allow only math characters
+    const cleaned = input.replace(/\s+/g, "");
+    if (cleaned === "") return 0;
+    if (!/^[0-9+\-*/().]+$/.test(cleaned)) {
+      throw new Error("Only numbers and + - * / ( ) are allowed");
+    }
+    // eslint-disable-next-line no-new-func
+    const val = Function(`"use strict"; return (${cleaned});`)();
+    const num = Number(val);
+    if (!isFinite(num)) throw new Error("Invalid result");
+    return num;
+  };
 
-              <button
-                type="button"
-                onClick={() => {
-                  setExpr("");
-                  setCalcError("");
-                }}
-                className="col-span-2 py-2 rounded-xl border border-cyan-glow/10 bg-white/5 hover:bg-white/10 transition text-white text-xs font-bold uppercase tracking-widest"
-              >
-                Clear
-              </button>
+  React.useEffect(() => {
+    if (!open) return;
+    try {
+      const v = safeEval(expr);
+      setPreview(v);
+      setCalcErr("");
+    } catch (e: any) {
+      setPreview(null);
+      setCalcErr(expr.trim() === "" ? "" : (e?.message || "Invalid expression"));
+    }
+  }, [expr, open]);
 
-              <button
-                type="button"
-                onClick={() => tap("+")}
-                className="py-2 rounded-xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition text-white font-mono text-sm"
-              >
-                +
-              </button>
+  const append = (s: string) => setExpr((p) => p + s);
+  const backspace = () => setExpr((p) => p.slice(0, -1));
+  const clear = () => setExpr("");
 
-              <button
-                type="button"
-                onClick={apply}
-                className="py-2 rounded-xl bg-cyan-glow text-navy-deep font-black uppercase tracking-widest text-xs hover:bg-white transition shadow-[0_0_25px_rgba(34,211,238,0.25)]"
-              >
-                =
-              </button>
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+        aria-label="Close mini calculator"
+      />
+
+      {/* Panel */}
+      <div className="relative w-full max-w-sm glass-panel rounded-3xl p-5 sm:p-6 border border-cyan-glow/20 shadow-[0_0_40px_rgba(34,211,238,0.15)]">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-widest text-cyan-glow">{title}</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">
+              Example: 1200+450*2
             </div>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-10 h-10 rounded-2xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition flex items-center justify-center"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5 text-cyan-glow" />
+          </button>
+        </div>
+
+        <input
+          value={expr}
+          onChange={(e) => setExpr(e.target.value)}
+          className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-2xl outline-none text-white font-mono text-sm"
+          placeholder="Enter expression"
+          inputMode="text"
+        />
+
+        <div className="mt-3 flex items-center justify-between">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            Result
+          </div>
+          <div className="font-mono font-bold text-white">
+            {preview === null ? "—" : preview.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+          </div>
+        </div>
+
+        {calcErr ? <div className="mt-2 text-xs text-red-400 font-mono">{calcErr}</div> : null}
+
+        <div className="mt-4 grid grid-cols-4 gap-2">
+          {["7", "8", "9", "/"].map((k) => (
+            <Key key={k} label={k} onClick={() => append(k)} />
+          ))}
+          {["4", "5", "6", "*"].map((k) => (
+            <Key key={k} label={k} onClick={() => append(k)} />
+          ))}
+          {["1", "2", "3", "-"].map((k) => (
+            <Key key={k} label={k} onClick={() => append(k)} />
+          ))}
+          <Key label="0" onClick={() => append("0")} />
+          <Key label="." onClick={() => append(".")} />
+          <Key label="+" onClick={() => append("+")} />
+          <button
+            type="button"
+            onClick={backspace}
+            className="h-11 rounded-2xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition flex items-center justify-center"
+            aria-label="Backspace"
+          >
+            <Delete className="w-4 h-4 text-cyan-glow" />
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={clear}
+            className="h-11 rounded-2xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition text-xs font-black uppercase tracking-[0.2em] text-cyan-glow"
+          >
+            Clear
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onApply(preview ?? 0)}
+            disabled={preview === null || !!calcErr}
+            className="h-11 rounded-2xl bg-cyan-glow text-navy-deep font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Use Result
+          </button>
+        </div>
       </div>
     </div>
+  );
+}
+
+function Key({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-11 rounded-2xl border border-cyan-glow/10 bg-cyan-glow/5 hover:bg-cyan-glow/10 transition font-mono font-bold text-white"
+    >
+      {label}
+    </button>
   );
 }
