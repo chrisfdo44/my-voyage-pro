@@ -11,6 +11,20 @@
   --color-cyan-glow: #22d3ee;
 }
 
+:root {
+  --app-bg: 248 250 252;      /* light background */
+  --app-text: 15 23 42;       /* light text */
+  --panel-bg: 255 255 255;    /* light panels */
+  --panel-border: 148 163 184;/* slate-400-ish border */
+}
+
+html.dark {
+  --app-bg: 2 6 23;           /* navy deep */
+  --app-text: 203 213 225;    /* slate-300 */
+  --panel-bg: 15 23 42;       /* slate-900-ish panel */
+  --panel-border: 34 211 238; /* cyan glow */
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
