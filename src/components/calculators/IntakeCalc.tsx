@@ -197,45 +197,44 @@ export function IntakeCalc() {
   );
 }
 
-function CbmToCbftConverter({
-  onApplyCbft,
-}: {
-  onApplyCbft: (cbft: string) => void;
-}) {
+function VolumeConverter() {
   const [cbm, setCbm] = React.useState<string>("");
-  const [decimals, setDecimals] = React.useState<number>(2);
+  const [cbft, setCbft] = React.useState<string>("");
 
   const CBM_TO_CBFT = 35.3146667;
 
-  const cbftValue =
-    cbm.trim() === "" ? "" : (Number(cbm) * CBM_TO_CBFT).toFixed(decimals);
+  const handleCbmChange = (value: string) => {
+    setCbm(value);
+    if (value === "") {
+      setCbft("");
+    } else {
+      const result = Number(value) * CBM_TO_CBFT;
+      setCbft(result.toFixed(2));
+    }
+  };
+
+  const handleCbftChange = (value: string) => {
+    setCbft(value);
+    if (value === "") {
+      setCbm("");
+    } else {
+      const result = Number(value) / CBM_TO_CBFT;
+      setCbm(result.toFixed(2));
+    }
+  };
 
   return (
-    <div className="glass-panel rounded-3xl p-6 sm:p-8">
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div>
-          <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em]">
-            CBM → CBFT Converter
-          </h3>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-muted)] mt-1">
-            1 CBM = 35.3146667 CBFT
-          </p>
-        </div>
+    <div className="glass-panel rounded-3xl p-6 sm:p-8 max-w-md mx-auto">
+      <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em] mb-2">
+        CBM ⇄ CBFT Converter
+      </h3>
 
-        <select
-          value={decimals}
-          onChange={(e) => setDecimals(Number(e.target.value))}
-          className="px-3 py-2 rounded-xl bg-navy-deep/50 border border-cyan-glow/10 text-sm text-[color:var(--vp-text)] outline-none"
-          title="Decimals"
-        >
-          <option value={0}>0 dp</option>
-          <option value={1}>1 dp</option>
-          <option value={2}>2 dp</option>
-          <option value={3}>3 dp</option>
-        </select>
-      </div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-muted)] mb-6">
+        1 CBM = 35.3146667 CBFT
+      </p>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="space-y-5">
+        {/* CBM */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold uppercase tracking-widest ml-1 text-[color:var(--vp-muted)]">
             Cubic Meter (CBM)
@@ -245,41 +244,34 @@ function CbmToCbftConverter({
             step="any"
             inputMode="decimal"
             value={cbm}
-            onChange={(e) => setCbm(e.target.value)}
-            placeholder=""
+            onChange={(e) => handleCbmChange(e.target.value)}
             className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-[color:var(--vp-text)] text-sm font-mono"
           />
         </div>
 
+        {/* CBFT */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold uppercase tracking-widest ml-1 text-[color:var(--vp-muted)]">
             Cubic Feet (CBFT)
           </label>
           <input
-            type="text"
-            value={cbftValue}
-            readOnly
-            className="w-full px-4 py-3 bg-navy-deep/30 border border-cyan-glow/10 rounded-xl outline-none transition-all text-[color:var(--vp-text)] text-sm font-mono"
+            type="number"
+            step="any"
+            inputMode="decimal"
+            value={cbft}
+            onChange={(e) => handleCbftChange(e.target.value)}
+            className="w-full px-4 py-3 bg-navy-deep/50 border border-cyan-glow/10 rounded-xl focus:ring-1 focus:ring-cyan-glow outline-none transition-all text-[color:var(--vp-text)] text-sm font-mono"
           />
         </div>
-      </div>
 
-      <div className="flex gap-3 mt-5">
+        {/* Clear */}
         <button
           type="button"
           onClick={() => {
-            if (cbftValue !== "") onApplyCbft(cbftValue);
+            setCbm("");
+            setCbft("");
           }}
-          disabled={cbftValue === ""}
-          className="flex-1 py-3 bg-cyan-glow text-navy-deep rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          Use in Grain Capacity (CBFT)
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setCbm("")}
-          className="px-4 py-3 rounded-2xl border border-cyan-glow/15 bg-cyan-glow/5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-text)] hover:bg-cyan-glow/10 transition"
+          className="w-full py-3 rounded-2xl border border-cyan-glow/15 bg-cyan-glow/5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--vp-text)] hover:bg-cyan-glow/10 transition"
         >
           Clear
         </button>
