@@ -184,7 +184,7 @@ export function VoyageCalc() {
               </div>
 
               <Input label="Vessel Hire ($/day)" name="hire" value={inputs.hire} onChange={handleChange} />
-              <Input label="ADDCOM (e.g. 0.0375)" name="addcom" value={inputs.addcom} onChange={handleChange} />
+              <Input label="TTL ADDCOM in % (Addcom + Brokerage)" name="addcom" value={inputs.addcom} onChange={handleChange} />
             </div>
           </div>
 
