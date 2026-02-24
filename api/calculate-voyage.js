@@ -30,7 +30,7 @@ export default function handler(req, res) {
 
   const totalBunkerCost = totalConsumption * vlsfoRate;
   const totalExpenses = (totalDuration * hire * 0.9625) + totalBunkerCost + pda + otherExpenses;
-  const freight = cargoQty > 0 ? (totalExpenses / cargoQty) * (1 + addcom) : 0;
+  const freight = cargoQty > 0 ? (totalExpenses / cargoQty) * (1 + addcom/100) : 0;
 
   res.status(200).json({
     totalDuration,
