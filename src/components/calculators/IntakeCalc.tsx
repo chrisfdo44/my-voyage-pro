@@ -120,11 +120,6 @@ export function IntakeCalc() {
               <Input label="TPC" name="tpc" value={inputs.tpc} onChange={handleChange} />
               <Input label="Grain Capacity (cbft)" name="grainCapacity" value={inputs.grainCapacity} onChange={handleChange} />
               <Input label="Stowage Factor (SF) (1m³ = 35.315 ft³)" name="sf" value={inputs.sf} onChange={handleChange} />
-              <CbmToCbftConverter
-  onApplyCbft={(cbft) =>
-    setInputs((prev) => ({ ...prev, grainCapacity: cbft }))
-  }
-/>
             </div>
 
             <div className="space-y-4 sm:space-y-6">
@@ -196,7 +191,6 @@ export function IntakeCalc() {
     </div>
   );
 }
-
 function VolumeConverter() {
   const [cbm, setCbm] = React.useState<string>("");
   const [cbft, setCbft] = React.useState<string>("");
