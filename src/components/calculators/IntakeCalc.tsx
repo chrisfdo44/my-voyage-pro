@@ -117,7 +117,7 @@ export function IntakeCalc() {
               <Input label="Draft (m)" name="draft" value={inputs.draft} onChange={handleChange} />
               <Input label="TPC" name="tpc" value={inputs.tpc} onChange={handleChange} />
               <Input label="Grain Capacity (CBFT)" name="grainCapacity" value={inputs.grainCapacity} onChange={handleChange} />
-              <Input label="Stowage Factor (SF) (1m³ = 35.315 ft³)" name="sf" value={inputs.sf} onChange={handleChange} />
+              <Input label="Stowage Factor (SF) in CBM" name="sf" value={inputs.sf} onChange={handleChange} />
 
               {/* ✅ PLACE CONVERTER HERE (RED BOX AREA) */}
               <CbmCbftConverter />
