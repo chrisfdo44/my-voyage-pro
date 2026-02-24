@@ -121,7 +121,11 @@ export function IntakeCalc() {
               <Input label="Grain Capacity (cbft)" name="grainCapacity" value={inputs.grainCapacity} onChange={handleChange} />
               <Input label="Stowage Factor (SF) (1m³ = 35.315 ft³)" name="sf" value={inputs.sf} onChange={handleChange} />
             </div>
-
+<CbmToCbftConverter
+  onApplyCbft={(cbft) =>
+    setInputs((prev) => ({ ...prev, grainCapacity: cbft }))
+  }
+/>
             <div className="space-y-4 sm:space-y-6">
               <h3 className="text-[10px] font-bold text-cyan-glow uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
                 <div className="w-1 h-1 bg-cyan-glow rounded-full"></div>
