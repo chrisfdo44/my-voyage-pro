@@ -2,24 +2,41 @@ import React, { useEffect, useMemo, useState } from "react";
 import { fetchBackendFromWebApp, type CargoRow, type VesselRow } from "../../lib/sheetsApi";
 
 type GreyEditable = {
-  // Vessel
-  dwt: number; draft: number; tpc: number; grain: number;
-  ladenSpeed: number; ladenCons: number;
-  ballastSpeed: number; ballastCons: number;
-  seaMgo: number; idleVlsfo: number; idleMgo: number;
-  workVlsfo: number; workMgo: number; vslConstant: number;
+  dwt: number;
+  draft: number;
+  tpc: number;
+  grain: number;
+  ladenSpeed: number;
+  ladenCons: number;
+  ballastSpeed: number;
+  ballastCons: number;
+  seaMgo: number;
+  idleVlsfo: number;
+  idleMgo: number;
+  workVlsfo: number;
+  workMgo: number;
+  vslConstant: number;
 
-  // Cargo
-  cargo: string; quantity: number; tolerance: number;
-  loadPort: string; loadRate: number;
-  dischargePort: string; dischargeRate: number;
-  turnTime: string; addcom: number;
-  lpPda: number; dpPda: number; otherCharges: number;
-  draftRestriction: number; seaMargin: number; dop: string;
-  ballastDistance: number; ladenDistance: number; totalDistance: number;
+  cargo: string;
+  quantity: number;
+  tolerance: number;
+  loadPort: string;
+  loadRate: number;
+  dischargePort: string;
+  dischargeRate: number;
+  turnTime: string;
+  addcom: number;
+  lpPda: number;
+  dpPda: number;
+  otherCharges: number;
+  draftRestriction: number;
+  seaMargin: number;
+  dop: string;
+  ballastDistance: number;
+  ladenDistance: number;
+  totalDistance: number;
   parameters: string;
 
-  // Intake
   waterDensity: number;
 };
 
@@ -38,13 +55,16 @@ function n(v: unknown, fallback = 0) {
   const num = typeof v === "number" ? v : Number(v);
   return Number.isFinite(num) ? num : fallback;
 }
+
 function fmt(num: number, decimals = 2) {
   if (!Number.isFinite(num)) return "-";
-  return num.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 }
 
 export default function VesselCargoCalculator() {
-  // ✅ Put your Google Sheets Web App link here:
   const WEB_APP_URL = useMemo(
     () => import.meta.env.VITE_SHEETS_WEBAPP_URL as string,
     []
@@ -56,15 +76,12 @@ export default function VesselCargoCalculator() {
   const [vessels, setVessels] = useState<VesselRow[]>([]);
   const [cargoList, setCargoList] = useState<CargoRow[]>([]);
 
-  // Red dropdowns
   const [selectedVessel, setSelectedVessel] = useState<string>("");
   const [selectedAccount, setSelectedAccount] = useState<string>("");
 
-  // Grey editable (and reset source)
   const [backendGreyDefaults, setBackendGreyDefaults] = useState<GreyEditable | null>(null);
   const [grey, setGrey] = useState<GreyEditable | null>(null);
 
-  // Green inputs
   const [green, setGreen] = useState<GreenInputs>({
     waitingDays: 2,
     vlsfoPrice: 690,
@@ -75,16 +92,17 @@ export default function VesselCargoCalculator() {
   });
 
   const [calculated, setCalculated] = useState<any | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Fetch backend from Web App
   useEffect(() => {
     let mounted = true;
+
     (async () => {
       try {
         setLoading(true);
         setErr(null);
 
-        if (!WEB_APP_URL) throw new Error("Missing VITE_SHEETS_WEBAPP_URL in .env");
+        if (!WEB_APP_URL) throw new Error("Missing VITE_SHEETS_WEBAPP_URL in env");
 
         const data = await fetchBackendFromWebApp(WEB_APP_URL);
         if (!mounted) return;
@@ -92,7 +110,6 @@ export default function VesselCargoCalculator() {
         setVessels(data.vessels);
         setCargoList(data.cargo);
 
-        // set initial selections
         setSelectedVessel(data.vessels[0]?.vessel ?? "");
         setSelectedAccount(data.cargo[0]?.accountName ?? "");
       } catch (e: any) {
@@ -103,19 +120,22 @@ export default function VesselCargoCalculator() {
         setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+
+    return () => {
+      mounted = false;
+    };
   }, [WEB_APP_URL]);
 
   const vesselDefaults = useMemo(
     () => vessels.find((v) => v.vessel === selectedVessel),
     [vessels, selectedVessel]
   );
+
   const cargoDefaults = useMemo(
     () => cargoList.find((c) => c.accountName === selectedAccount),
     [cargoList, selectedAccount]
   );
 
-  // Whenever dropdown changes → reload grey defaults from backend data
   useEffect(() => {
     if (!vesselDefaults || !cargoDefaults) return;
 
@@ -172,22 +192,26 @@ export default function VesselCargoCalculator() {
   function calculate() {
     if (!grey) return;
 
-    // Intake (hidden)
     const draftBssSW = n(grey.draft) * n(grey.waterDensity) / 1.025;
     const draftRestriction = n(grey.draftRestriction);
-    const dwtChange = draftRestriction < draftBssSW ? (draftBssSW - draftRestriction) : 0;
+    const dwtChange = draftRestriction < draftBssSW ? draftBssSW - draftRestriction : 0;
     const restrictedDwt = dwtChange * n(grey.tpc) * 100;
     const intakeQty = n(grey.dwt) - restrictedDwt;
     const loadableQty = intakeQty - n(grey.vslConstant);
     const H1 = loadableQty;
 
-    // Days + bunkers
-    const ballastDays = n(grey.ballastDistance) / (n(grey.ballastSpeed) * (1 - n(grey.seaMargin))) / 24;
-    const ballastVlsfo = (n(grey.ballastDistance) / (n(grey.ballastSpeed) * 24) * (1 + n(grey.seaMargin))) * n(grey.ballastCons);
+    const ballastDays =
+      n(grey.ballastDistance) / (n(grey.ballastSpeed) * (1 - n(grey.seaMargin))) / 24;
+    const ballastVlsfo =
+      (n(grey.ballastDistance) / (n(grey.ballastSpeed) * 24) * (1 + n(grey.seaMargin))) *
+      n(grey.ballastCons);
     const ballastMgo = ballastDays * n(grey.seaMgo);
 
-    const ladenDays = n(grey.ladenDistance) / (n(grey.ladenSpeed) * (1 - n(grey.seaMargin))) / 24;
-    const ladenVlsfo = (n(grey.ladenDistance) / (n(grey.ladenSpeed) * 24) * (1 + n(grey.seaMargin))) * n(grey.ladenCons);
+    const ladenDays =
+      n(grey.ladenDistance) / (n(grey.ladenSpeed) * (1 - n(grey.seaMargin))) / 24;
+    const ladenVlsfo =
+      (n(grey.ladenDistance) / (n(grey.ladenSpeed) * 24) * (1 + n(grey.seaMargin))) *
+      n(grey.ladenCons);
     const ladenMgo = ladenDays * n(grey.seaMgo);
 
     const loadingDays = H1 / n(grey.loadRate);
@@ -202,26 +226,33 @@ export default function VesselCargoCalculator() {
     const waitingVlsfo = waitingDays * n(grey.idleVlsfo);
     const waitingMgo = waitingDays * n(grey.idleMgo);
 
-    const totalDays = ballastDays + ladenDays + loadingDays + dischargingDays + waitingDays;
-    const totalVlsfo = ballastVlsfo + ladenVlsfo + loadingVlsfo + dischargingVlsfo + waitingVlsfo;
-    const totalMgo = ballastMgo + ladenMgo + loadingMgo + dischargingMgo + waitingMgo;
+    const totalDays =
+      ballastDays + ladenDays + loadingDays + dischargingDays + waitingDays;
+    const totalVlsfo =
+      ballastVlsfo + ladenVlsfo + loadingVlsfo + dischargingVlsfo + waitingVlsfo;
+    const totalMgo =
+      ballastMgo + ladenMgo + loadingMgo + dischargingMgo + waitingMgo;
 
     const bunkerCostVlsfo = totalVlsfo * n(green.vlsfoPrice);
     const bunkerCostMgo = totalMgo * n(green.mgoPrice);
 
-    const hireCost = (n(green.hire) * (1 - BROKERAGE_FIXED)) * totalDays;
+    const hireCost = n(green.hire) * (1 - BROKERAGE_FIXED) * totalDays;
     const pda = n(grey.lpPda) + n(grey.dpPda);
     const ballastBonus = n(green.ballastBonus) * (1 - BROKERAGE_FIXED);
     const cve = 1500 * (totalDays / 30);
     const otherCharges = n(grey.otherCharges);
 
-    const totalExpense = otherCharges + ballastBonus + pda + bunkerCostVlsfo + bunkerCostMgo + cve + hireCost;
+    const totalExpense =
+      otherCharges + ballastBonus + pda + bunkerCostVlsfo + bunkerCostMgo + cve + hireCost;
 
     const freight =
-      (((n(green.hire) * (1 - BROKERAGE_FIXED)) * totalDays) + (totalExpense - hireCost)) / H1 * (1 + n(grey.addcom));
+      ((n(green.hire) * (1 - BROKERAGE_FIXED) * totalDays + (totalExpense - hireCost)) / H1) *
+      (1 + n(grey.addcom));
 
     const tce =
-      ((((n(green.charterFreight) * (1 - n(grey.addcom))) * H1) - (totalExpense - hireCost)) / totalDays) * (1 + BROKERAGE_FIXED);
+      ((((n(green.charterFreight) * (1 - n(grey.addcom))) * H1) - (totalExpense - hireCost)) /
+        totalDays) *
+      (1 + BROKERAGE_FIXED);
 
     const pnl = (n(green.charterFreight) - freight) * H1;
 
@@ -234,7 +265,6 @@ export default function VesselCargoCalculator() {
     });
   }
 
-  // ✅ Same “previous UI” style: ocean teal / cyan, good light-mode contrast
   const page = "min-h-screen bg-slate-950 text-slate-100";
   const shell = "mx-auto max-w-7xl px-4 py-6";
   const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm";
@@ -288,134 +318,114 @@ export default function VesselCargoCalculator() {
     <div className={page}>
       <div className={shell}>
         <div className="mb-4">
-          <div className={title}>Vessel & Cargo Calculator</div>
-          <div className={sub}>Same ocean theme UI • Dropdowns → Grey editable → Inputs → Calculate</div>
+          <div className={title}>Cargo Freight Calculator</div>
+          <div className={sub}>Live vessel, cargo and voyage freight calculation</div>
         </div>
 
-        {/* RED dropdowns */}
         <div className={`${card} mb-4`}>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
             <div>
-              <div className={label}>Vessel Name (Dropdown)</div>
-              <select className={input} value={selectedVessel} onChange={(e) => setSelectedVessel(e.target.value)}>
+              <div className={label}>Vessel Name</div>
+              <select
+                className={input}
+                value={selectedVessel}
+                onChange={(e) => setSelectedVessel(e.target.value)}
+              >
                 {vessels.map((v) => (
-                  <option key={v.vessel} value={v.vessel}>{v.vessel}</option>
+                  <option key={v.vessel} value={v.vessel}>
+                    {v.vessel}
+                  </option>
                 ))}
               </select>
             </div>
-            <div>
-              <div className={label}>Account Name (Dropdown)</div>
-              <select className={input} value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
-                {cargoList.map((c) => (
-                  <option key={c.accountName} value={c.accountName}>{c.accountName}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="mt-3 text-xs text-slate-400">
-            Backend source: Google Sheets Web App (live)
-          </div>
-        </div>
 
-        {/* GREY editable */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className={card}>
-            <div className="mb-3 flex items-center justify-between">
-              <div className="text-base font-semibold">Vessel (Grey editable)</div>
-              <button className={btnGhost} onClick={resetGreyToBackend} type="button">
-                Reset Grey
+            <div>
+              <div className={label}>Account Name</div>
+              <select
+                className={input}
+                value={selectedAccount}
+                onChange={(e) => setSelectedAccount(e.target.value)}
+              >
+                {cargoList.map((c) => (
+                  <option key={c.accountName} value={c.accountName}>
+                    {c.accountName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-end">
+              <button className={`${btnPrimary} w-full`} onClick={calculate} type="button">
+                Calculate
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ["Dwt", "dwt"], ["Draft", "draft"], ["TPC", "tpc"], ["Grain", "grain"],
-                ["Laden Speed", "ladenSpeed"], ["Laden Cons", "ladenCons"],
-                ["Ballast Speed", "ballastSpeed"], ["Ballast Cons", "ballastCons"],
-                ["Sea MGO", "seaMgo"], ["Idle VLSFO", "idleVlsfo"], ["Idle MGO", "idleMgo"],
-                ["Working VLSFO", "workVlsfo"], ["Working MGO", "workMgo"], ["Vsl Constant", "vslConstant"],
-              ].map(([t, k]) => (
-                <div key={k} className="col-span-2 md:col-span-1">
-                  <div className={label}>{t}</div>
-                  <input
-                    className={input}
-                    type="number"
-                    step="any"
-                    value={(grey as any)[k]}
-                    onChange={(e) => setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className={card}>
-            <div className="mb-1 text-base font-semibold">Cargo (Grey editable)</div>
-            <div className="mb-3 text-xs text-slate-400">{grey.parameters}</div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <div className={label}>Cargo</div>
-                <input className={input} value={grey.cargo} onChange={(e) => setGrey((s) => ({ ...s!, cargo: e.target.value }))} />
-              </div>
-
-              {[
-                ["Quantity", "quantity"], ["Tolerance", "tolerance"],
-                ["Load Rate", "loadRate"], ["Discharge Rate", "dischargeRate"],
-                ["LP PDA", "lpPda"], ["DP PDA", "dpPda"],
-                ["Other Charges", "otherCharges"],
-                ["Draft Restriction", "draftRestriction"],
-                ["Sea Margin", "seaMargin"],
-                ["Ballast Distance", "ballastDistance"],
-                ["Laden Distance", "ladenDistance"],
-                ["Total Distance", "totalDistance"],
-                ["Addcom + Brokerage", "addcom"],
-                ["Water Density", "waterDensity"],
-              ].map(([t, k]) => (
-                <div key={k} className="col-span-2 md:col-span-1">
-                  <div className={label}>{t}</div>
-                  <input
-                    className={input}
-                    type="number"
-                    step="any"
-                    value={(grey as any)[k]}
-                    onChange={(e) => setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))}
-                  />
-                </div>
-              ))}
-
-              {[
-                ["Load Port", "loadPort"],
-                ["Discharge Port", "dischargePort"],
-                ["Turn Time", "turnTime"],
-                ["DOP", "dop"],
-              ].map(([t, k]) => (
-                <div key={k} className="col-span-2">
-                  <div className={label}>{t}</div>
-                  <input className={input} value={(grey as any)[k]} onChange={(e) => setGrey((s) => ({ ...s!, [k]: e.target.value }))} />
-                </div>
-              ))}
+            <div className="flex items-end">
+              <button className={`${btnGhost} w-full`} onClick={resetGreyToBackend} type="button">
+                Reset Backend Values
+              </button>
             </div>
           </div>
         </div>
 
-        {/* GREEN inputs */}
-        <div className={`${card} mt-4`}>
-          <div className="mb-3 flex items-center justify-between">
-            <div className="text-base font-semibold">User Inputs (Green)</div>
-            <div className="flex gap-2">
-              <button className={btnPrimary} onClick={calculate} type="button">Calculate</button>
-              <button className={btnGhost} onClick={() => setCalculated(null)} type="button">Clear</button>
+        {calculated && (
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <div className={card}>
+              <div className="text-xs uppercase tracking-wider text-cyan-400">Loadable Qty</div>
+              <div className="mt-2 text-2xl font-bold text-white">
+                {fmt(calculated.intake.loadableQty, 0)}
+              </div>
+            </div>
+
+            <div className={card}>
+              <div className="text-xs uppercase tracking-wider text-cyan-400">Total Days</div>
+              <div className="mt-2 text-2xl font-bold text-white">
+                {fmt(calculated.days.totalDays, 2)}
+              </div>
+            </div>
+
+            <div className={card}>
+              <div className="text-xs uppercase tracking-wider text-cyan-400">Freight</div>
+              <div className="mt-2 text-2xl font-bold text-white">
+                {fmt(calculated.results.freight, 2)}
+              </div>
+            </div>
+
+            <div className={card}>
+              <div className="text-xs uppercase tracking-wider text-cyan-400">TCE</div>
+              <div className="mt-2 text-2xl font-bold text-white">
+                {fmt(calculated.results.tce, 0)}
+              </div>
+            </div>
+
+            <div className={card}>
+              <div className="text-xs uppercase tracking-wider text-cyan-400">PNL</div>
+              <div className="mt-2 text-2xl font-bold text-white">
+                {fmt(calculated.results.pnl, 0)}
+              </div>
             </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-6">
+        <div className={`${card} mb-4`}>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-base font-semibold">User Inputs</div>
+            <button
+              className={btnGhost}
+              onClick={() => setShowAdvanced((s) => !s)}
+              type="button"
+            >
+              {showAdvanced ? "Hide Advanced" : "Show Advanced"}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
             {[
-              ["Waiting days", "waitingDays"],
-              ["VLSFO price", "vlsfoPrice"],
-              ["MGO price", "mgoPrice"],
+              ["VLSFO Price", "vlsfoPrice"],
+              ["MGO Price", "mgoPrice"],
               ["Hire", "hire"],
               ["Ballast Bonus", "ballastBonus"],
+              ["Waiting Days", "waitingDays"],
               ["Charter Frt", "charterFreight"],
             ].map(([t, k]) => (
               <div key={k}>
@@ -425,51 +435,155 @@ export default function VesselCargoCalculator() {
                   type="number"
                   step="any"
                   value={(green as any)[k]}
-                  onChange={(e) => setGreen((s) => ({ ...s, [k]: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    setGreen((s) => ({ ...s, [k]: Number(e.target.value) }))
+                  }
                 />
               </div>
             ))}
           </div>
         </div>
 
-        {/* YELLOW outputs */}
-        {calculated && (
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {showAdvanced && (
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <div className={card}>
-              <div className="text-base font-semibold">Intake</div>
-              <div className="mt-3 space-y-2 text-sm text-slate-200">
-                <div>Loadable Qty: <b>{fmt(calculated.intake.loadableQty, 0)}</b></div>
-                <div>Intake Qty: {fmt(calculated.intake.intakeQty, 0)}</div>
-                <div>Restricted DWT: {fmt(calculated.intake.restrictedDwt, 0)}</div>
+              <div className="mb-3 text-base font-semibold">Vessel Backend Fields</div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  ["Dwt", "dwt"],
+                  ["Draft", "draft"],
+                  ["TPC", "tpc"],
+                  ["Grain", "grain"],
+                  ["Laden Speed", "ladenSpeed"],
+                  ["Laden Cons", "ladenCons"],
+                  ["Ballast Speed", "ballastSpeed"],
+                  ["Ballast Cons", "ballastCons"],
+                  ["Sea MGO", "seaMgo"],
+                  ["Idle VLSFO", "idleVlsfo"],
+                  ["Idle MGO", "idleMgo"],
+                  ["Working VLSFO", "workVlsfo"],
+                  ["Working MGO", "workMgo"],
+                  ["Vsl Constant", "vslConstant"],
+                ].map(([t, k]) => (
+                  <div key={k} className="col-span-2 md:col-span-1">
+                    <div className={label}>{t}</div>
+                    <input
+                      className={input}
+                      type="number"
+                      step="any"
+                      value={(grey as any)[k]}
+                      onChange={(e) =>
+                        setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
+                      }
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
             <div className={card}>
-              <div className="text-base font-semibold">Days</div>
-              <div className="mt-3 space-y-2 text-sm text-slate-200">
-                <div>Total Days: <b>{fmt(calculated.days.totalDays, 2)}</b></div>
-                <div>Ballast: {fmt(calculated.days.ballastDays, 2)}</div>
-                <div>Laden: {fmt(calculated.days.ladenDays, 2)}</div>
-                <div>Load: {fmt(calculated.days.loadingDays, 2)}</div>
-                <div>Disch: {fmt(calculated.days.dischargingDays, 2)}</div>
-                <div>Wait: {fmt(calculated.days.waitingDays, 2)}</div>
-              </div>
-            </div>
+              <div className="mb-1 text-base font-semibold">Cargo Backend Fields</div>
+              <div className="mb-3 text-xs text-slate-400">{grey.parameters}</div>
 
-            <div className={card}>
-              <div className="text-base font-semibold">Results</div>
-              <div className="mt-3 space-y-2 text-sm text-slate-200">
-                <div>Freight: <b>{fmt(calculated.results.freight, 2)}</b></div>
-                <div>TCE: <b>{fmt(calculated.results.tce, 0)}</b></div>
-                <div>PNL: <b>{fmt(calculated.results.pnl, 0)}</b></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <div className={label}>Cargo</div>
+                  <input
+                    className={input}
+                    value={grey.cargo}
+                    onChange={(e) => setGrey((s) => ({ ...s!, cargo: e.target.value }))}
+                  />
+                </div>
+
+                {[
+                  ["Quantity", "quantity"],
+                  ["Tolerance", "tolerance"],
+                  ["Load Rate", "loadRate"],
+                  ["Discharge Rate", "dischargeRate"],
+                  ["LP PDA", "lpPda"],
+                  ["DP PDA", "dpPda"],
+                  ["Other Charges", "otherCharges"],
+                  ["Draft Restriction", "draftRestriction"],
+                  ["Sea Margin", "seaMargin"],
+                  ["Ballast Distance", "ballastDistance"],
+                  ["Laden Distance", "ladenDistance"],
+                  ["Total Distance", "totalDistance"],
+                  ["Addcom + Brokerage", "addcom"],
+                  ["Water Density", "waterDensity"],
+                ].map(([t, k]) => (
+                  <div key={k} className="col-span-2 md:col-span-1">
+                    <div className={label}>{t}</div>
+                    <input
+                      className={input}
+                      type="number"
+                      step="any"
+                      value={(grey as any)[k]}
+                      onChange={(e) =>
+                        setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
+                      }
+                    />
+                  </div>
+                ))}
+
+                {[
+                  ["Load Port", "loadPort"],
+                  ["Discharge Port", "dischargePort"],
+                  ["Turn Time", "turnTime"],
+                  ["DOP", "dop"],
+                ].map(([t, k]) => (
+                  <div key={k} className="col-span-2">
+                    <div className={label}>{t}</div>
+                    <input
+                      className={input}
+                      value={(grey as any)[k]}
+                      onChange={(e) =>
+                        setGrey((s) => ({ ...s!, [k]: e.target.value }))
+                      }
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        <div className="mt-6 text-xs text-slate-500">
-          Brokerage fixed in formulas: 3.75% • Addcom used from Grey (editable)
-        </div>
+        {calculated && (
+          <div className={`${card} mt-4`}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <div className="text-base font-semibold">Intake</div>
+                <div className="mt-2 space-y-1 text-sm text-slate-300">
+                  <div>
+                    Loadable Qty: <b>{fmt(calculated.intake.loadableQty, 0)}</b>
+                  </div>
+                  <div>Intake Qty: {fmt(calculated.intake.intakeQty, 0)}</div>
+                  <div>Restricted DWT: {fmt(calculated.intake.restrictedDwt, 0)}</div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-base font-semibold">Days</div>
+                <div className="mt-2 space-y-1 text-sm text-slate-300">
+                  <div>Total Days: <b>{fmt(calculated.days.totalDays, 2)}</b></div>
+                  <div>Ballast: {fmt(calculated.days.ballastDays, 2)}</div>
+                  <div>Laden: {fmt(calculated.days.ladenDays, 2)}</div>
+                  <div>Load: {fmt(calculated.days.loadingDays, 2)}</div>
+                  <div>Disch: {fmt(calculated.days.dischargingDays, 2)}</div>
+                  <div>Wait: {fmt(calculated.days.waitingDays, 2)}</div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-base font-semibold">Result Summary</div>
+                <div className="mt-2 space-y-1 text-sm text-slate-300">
+                  <div>Freight: <b>{fmt(calculated.results.freight, 2)}</b></div>
+                  <div>TCE: <b>{fmt(calculated.results.tce, 0)}</b></div>
+                  <div>PNL: <b>{fmt(calculated.results.pnl, 0)}</b></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
