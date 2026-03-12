@@ -102,14 +102,15 @@ export default function VesselCargoCalculator() {
         setLoading(true);
         setErr(null);
 
-        if (!WEB_APP_URL) throw new Error("Missing VITE_SHEETS_WEBAPP_URL in env");
+        if (!WEB_APP_URL) {
+          throw new Error("Missing VITE_SHEETS_WEBAPP_URL in env");
+        }
 
         const data = await fetchBackendFromWebApp(WEB_APP_URL);
         if (!mounted) return;
 
         setVessels(data.vessels);
         setCargoList(data.cargo);
-
         setSelectedVessel(data.vessels[0]?.vessel ?? "");
         setSelectedAccount(data.cargo[0]?.accountName ?? "");
       } catch (e: any) {
@@ -270,7 +271,7 @@ export default function VesselCargoCalculator() {
   const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm";
   const title = "text-xl font-bold";
   const sub = "text-sm text-slate-300";
-  const label = "text-xs font-medium text-slate-300";
+  const label = "mb-1 text-xs font-medium uppercase tracking-wide text-slate-300";
   const input =
     "w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20";
   const btnPrimary =
@@ -284,7 +285,7 @@ export default function VesselCargoCalculator() {
         <div className={shell}>
           <div className={card}>
             <div className={title}>Loading calculator…</div>
-            <div className={sub}>Fetching backend vessel & cargo data from Google Sheets Web App.</div>
+            <div className={sub}>Fetching backend vessel and cargo data.</div>
           </div>
         </div>
       </div>
@@ -298,14 +299,6 @@ export default function VesselCargoCalculator() {
           <div className={card}>
             <div className={title}>Couldn’t load backend data</div>
             <div className="mt-2 text-sm text-rose-300">{err}</div>
-            <div className="mt-3 text-sm text-slate-300">
-              Common fixes:
-              <ul className="mt-2 list-disc pl-5">
-                <li>Web App is not deployed as “Anyone” can access</li>
-                <li>Web App returns HTML instead of JSON</li>
-                <li>CORS blocked (Apps Script should be okay if you return JSON directly)</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>
@@ -317,11 +310,12 @@ export default function VesselCargoCalculator() {
   return (
     <div className={page}>
       <div className={shell}>
-        <div className="mb-4">
+        <div className="mb-5">
           <div className={title}>Cargo Freight Calculator</div>
           <div className={sub}>Live vessel, cargo and voyage freight calculation</div>
         </div>
 
+        {/* Top controls */}
         <div className={`${card} mb-4`}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
             <div>
@@ -368,6 +362,7 @@ export default function VesselCargoCalculator() {
           </div>
         </div>
 
+        {/* Top result cards */}
         {calculated && (
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <div className={card}>
@@ -407,48 +402,106 @@ export default function VesselCargoCalculator() {
           </div>
         )}
 
+        {/* Main visible input layout */}
         <div className={`${card} mb-4`}>
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <div className="text-base font-semibold">User Inputs</div>
             <button
               className={btnGhost}
               onClick={() => setShowAdvanced((s) => !s)}
               type="button"
             >
-              {showAdvanced ? "Hide Advanced" : "Show Advanced"}
+              {showAdvanced ? "Hide Advanced Fields" : "Show Advanced Fields"}
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
-            {[
-              ["VLSFO Price", "vlsfoPrice"],
-              ["MGO Price", "mgoPrice"],
-              ["Hire", "hire"],
-              ["Ballast Bonus", "ballastBonus"],
-              ["Waiting Days", "waitingDays"],
-              ["Charter Frt", "charterFreight"],
-            ].map(([t, k]) => (
-              <div key={k}>
-                <div className={label}>{t}</div>
-                <input
-                  className={input}
-                  type="number"
-                  step="any"
-                  value={(green as any)[k]}
-                  onChange={(e) =>
-                    setGreen((s) => ({ ...s, [k]: Number(e.target.value) }))
-                  }
-                />
-              </div>
-            ))}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div>
+              <div className={label}>VLSFO Price</div>
+              <input
+                className={input}
+                type="number"
+                step="any"
+                value={green.vlsfoPrice}
+                onChange={(e) =>
+                  setGreen((s) => ({ ...s, vlsfoPrice: Number(e.target.value) }))
+                }
+              />
+            </div>
+
+            <div>
+              <div className={label}>MGO Price</div>
+              <input
+                className={input}
+                type="number"
+                step="any"
+                value={green.mgoPrice}
+                onChange={(e) =>
+                  setGreen((s) => ({ ...s, mgoPrice: Number(e.target.value) }))
+                }
+              />
+            </div>
+
+            <div>
+              <div className={label}>Hire</div>
+              <input
+                className={input}
+                type="number"
+                step="any"
+                value={green.hire}
+                onChange={(e) =>
+                  setGreen((s) => ({ ...s, hire: Number(e.target.value) }))
+                }
+              />
+            </div>
+
+            <div>
+              <div className={label}>Ballast Bonus</div>
+              <input
+                className={input}
+                type="number"
+                step="any"
+                value={green.ballastBonus}
+                onChange={(e) =>
+                  setGreen((s) => ({ ...s, ballastBonus: Number(e.target.value) }))
+                }
+              />
+            </div>
+
+            <div>
+              <div className={label}>Waiting Days</div>
+              <input
+                className={input}
+                type="number"
+                step="any"
+                value={green.waitingDays}
+                onChange={(e) =>
+                  setGreen((s) => ({ ...s, waitingDays: Number(e.target.value) }))
+                }
+              />
+            </div>
+
+            <div>
+              <div className={label}>Charter Frt</div>
+              <input
+                className={input}
+                type="number"
+                step="any"
+                value={green.charterFreight}
+                onChange={(e) =>
+                  setGreen((s) => ({ ...s, charterFreight: Number(e.target.value) }))
+                }
+              />
+            </div>
           </div>
         </div>
 
+        {/* Advanced layout */}
         {showAdvanced && (
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <div className={card}>
-              <div className="mb-3 text-base font-semibold">Vessel Backend Fields</div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="mb-4 text-base font-semibold">Vessel Backend Fields</div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {[
                   ["Dwt", "dwt"],
                   ["Draft", "draft"],
@@ -465,7 +518,7 @@ export default function VesselCargoCalculator() {
                   ["Working MGO", "workMgo"],
                   ["Vsl Constant", "vslConstant"],
                 ].map(([t, k]) => (
-                  <div key={k} className="col-span-2 md:col-span-1">
+                  <div key={k}>
                     <div className={label}>{t}</div>
                     <input
                       className={input}
@@ -483,10 +536,10 @@ export default function VesselCargoCalculator() {
 
             <div className={card}>
               <div className="mb-1 text-base font-semibold">Cargo Backend Fields</div>
-              <div className="mb-3 text-xs text-slate-400">{grey.parameters}</div>
+              <div className="mb-4 text-xs text-slate-400">{grey.parameters}</div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="md:col-span-2">
                   <div className={label}>Cargo</div>
                   <input
                     className={input}
@@ -511,7 +564,7 @@ export default function VesselCargoCalculator() {
                   ["Addcom + Brokerage", "addcom"],
                   ["Water Density", "waterDensity"],
                 ].map(([t, k]) => (
-                  <div key={k} className="col-span-2 md:col-span-1">
+                  <div key={k}>
                     <div className={label}>{t}</div>
                     <input
                       className={input}
@@ -531,7 +584,7 @@ export default function VesselCargoCalculator() {
                   ["Turn Time", "turnTime"],
                   ["DOP", "dop"],
                 ].map(([t, k]) => (
-                  <div key={k} className="col-span-2">
+                  <div key={k} className="md:col-span-2">
                     <div className={label}>{t}</div>
                     <input
                       className={input}
@@ -547,15 +600,14 @@ export default function VesselCargoCalculator() {
           </div>
         )}
 
+        {/* Detail summary */}
         {calculated && (
           <div className={`${card} mt-4`}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <div>
                 <div className="text-base font-semibold">Intake</div>
                 <div className="mt-2 space-y-1 text-sm text-slate-300">
-                  <div>
-                    Loadable Qty: <b>{fmt(calculated.intake.loadableQty, 0)}</b>
-                  </div>
+                  <div>Loadable Qty: <b>{fmt(calculated.intake.loadableQty, 0)}</b></div>
                   <div>Intake Qty: {fmt(calculated.intake.intakeQty, 0)}</div>
                   <div>Restricted DWT: {fmt(calculated.intake.restrictedDwt, 0)}</div>
                 </div>
