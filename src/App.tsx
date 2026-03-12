@@ -5,6 +5,7 @@ import { IntakeCalc } from "./components/calculators/IntakeCalc";
 import { VoyageCalc } from "./components/calculators/VoyageCalc";
 import { BallastCalc } from "./components/calculators/BallastCalc";
 import { OpenBookCalc } from "./components/calculators/OpenBookCalc";
+import VesselCargoCalculator from "./components/calculators/VesselCargoCalculator";
 import { Ship, Calculator, FileText, Navigation, Anchor, LogIn, ArrowRight } from "lucide-react";
 
 type View = "home" | "intake" | "voyage" | "ballast" | "openbook" | "auth";
