@@ -49,7 +49,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
     { id: "voyage", label: "Voyage" },
     { id: "ballast", label: "Ballast" },
     { id: "openbook", label: "Open Book" },
-    { id: "cargo", label: "Cargo Freight" },
+    
   ];
 
   return (
