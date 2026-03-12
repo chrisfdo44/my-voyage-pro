@@ -191,96 +191,128 @@ export default function VesselCargoCalculator() {
   }
 
   function calculate() {
-    if (!grey) return;
+  if (!grey) return;
 
-    const draftBssSW = n(grey.draft) * n(grey.waterDensity) / 1.025;
-    const draftRestriction = n(grey.draftRestriction);
-    const dwtChange = draftRestriction < draftBssSW ? draftBssSW - draftRestriction : 0;
-    const restrictedDwt = dwtChange * n(grey.tpc) * 100;
-    const intakeQty = n(grey.dwt) - restrictedDwt;
-    const loadableQty = intakeQty - n(grey.vslConstant);
-    const H1 = loadableQty;
+  const draftBssSW = n(grey.draft) * n(grey.waterDensity) / 1.025;
+  const draftRestriction = n(grey.draftRestriction);
+  const dwtChange = draftRestriction < draftBssSW ? draftBssSW - draftRestriction : 0;
+  const restrictedDwt = dwtChange * n(grey.tpc) * 100;
+  const intakeQty = n(grey.dwt) - restrictedDwt;
+  const loadableQty = intakeQty - n(grey.vslConstant);
+  const H1 = loadableQty;
 
-    const ballastDays =
-      n(grey.ballastDistance) / (n(grey.ballastSpeed) * (1 - n(grey.seaMargin))) / 24;
-    const ballastVlsfo =
-      (n(grey.ballastDistance) / (n(grey.ballastSpeed) * 24) * (1 + n(grey.seaMargin))) *
-      n(grey.ballastCons);
-    const ballastMgo = ballastDays * n(grey.seaMgo);
+  const ballastDays =
+    n(grey.ballastDistance) / (n(grey.ballastSpeed) * (1 - n(grey.seaMargin))) / 24;
+  const ballastVlsfo =
+    (n(grey.ballastDistance) / (n(grey.ballastSpeed) * 24) * (1 + n(grey.seaMargin))) *
+    n(grey.ballastCons);
+  const ballastMgo = ballastDays * n(grey.seaMgo);
 
-    const ladenDays =
-      n(grey.ladenDistance) / (n(grey.ladenSpeed) * (1 - n(grey.seaMargin))) / 24;
-    const ladenVlsfo =
-      (n(grey.ladenDistance) / (n(grey.ladenSpeed) * 24) * (1 + n(grey.seaMargin))) *
-      n(grey.ladenCons);
-    const ladenMgo = ladenDays * n(grey.seaMgo);
+  const ladenDays =
+    n(grey.ladenDistance) / (n(grey.ladenSpeed) * (1 - n(grey.seaMargin))) / 24;
+  const ladenVlsfo =
+    (n(grey.ladenDistance) / (n(grey.ladenSpeed) * 24) * (1 + n(grey.seaMargin))) *
+    n(grey.ladenCons);
+  const ladenMgo = ladenDays * n(grey.seaMgo);
 
-    const loadingDays = H1 / n(grey.loadRate);
-    const loadingVlsfo = loadingDays * n(grey.workVlsfo);
-    const loadingMgo = loadingDays * n(grey.workMgo);
+  const loadingDays = H1 / n(grey.loadRate);
+  const loadingVlsfo = loadingDays * n(grey.workVlsfo);
+  const loadingMgo = loadingDays * n(grey.workMgo);
 
-    const dischargingDays = H1 / n(grey.dischargeRate);
-    const dischargingVlsfo = dischargingDays * n(grey.workVlsfo);
-    const dischargingMgo = dischargingDays * n(grey.workMgo);
+  const dischargingDays = H1 / n(grey.dischargeRate);
+  const dischargingVlsfo = dischargingDays * n(grey.workVlsfo);
+  const dischargingMgo = dischargingDays * n(grey.workMgo);
 
-    const waitingDays = n(green.waitingDays);
-    const waitingVlsfo = waitingDays * n(grey.idleVlsfo);
-    const waitingMgo = waitingDays * n(grey.idleMgo);
+  const waitingDays = n(green.waitingDays);
+  const waitingVlsfo = waitingDays * n(grey.idleVlsfo);
+  const waitingMgo = waitingDays * n(grey.idleMgo);
 
-    const totalDays =
-      ballastDays + ladenDays + loadingDays + dischargingDays + waitingDays;
-    const totalVlsfo =
-      ballastVlsfo + ladenVlsfo + loadingVlsfo + dischargingVlsfo + waitingVlsfo;
-    const totalMgo =
-      ballastMgo + ladenMgo + loadingMgo + dischargingMgo + waitingMgo;
+  const totalDays =
+    ballastDays + ladenDays + loadingDays + dischargingDays + waitingDays;
+  const totalVlsfo =
+    ballastVlsfo + ladenVlsfo + loadingVlsfo + dischargingVlsfo + waitingVlsfo;
+  const totalMgo =
+    ballastMgo + ladenMgo + loadingMgo + dischargingMgo + waitingMgo;
 
-    const bunkerCostVlsfo = totalVlsfo * n(green.vlsfoPrice);
-    const bunkerCostMgo = totalMgo * n(green.mgoPrice);
+  const bunkerCostVlsfo = totalVlsfo * n(green.vlsfoPrice);
+  const bunkerCostMgo = totalMgo * n(green.mgoPrice);
 
-    const hireCost = n(green.hire) * (1 - BROKERAGE_FIXED) * totalDays;
-    const pda = n(grey.lpPda) + n(grey.dpPda);
-    const ballastBonus = n(green.ballastBonus) * (1 - BROKERAGE_FIXED);
-    const cve = 1500 * (totalDays / 30);
-    const otherCharges = n(grey.otherCharges);
+  const hireCost = n(green.hire) * (1 - BROKERAGE_FIXED) * totalDays;
+  const pda = n(grey.lpPda) + n(grey.dpPda);
+  const ballastBonus = n(green.ballastBonus) * (1 - BROKERAGE_FIXED);
+  const cve = 1500 * (totalDays / 30);
+  const otherCharges = n(grey.otherCharges);
 
-    const totalExpense =
-      otherCharges + ballastBonus + pda + bunkerCostVlsfo + bunkerCostMgo + cve + hireCost;
+  const totalExpense =
+    otherCharges + ballastBonus + pda + bunkerCostVlsfo + bunkerCostMgo + cve + hireCost;
 
-    const freight =
-      ((n(green.hire) * (1 - BROKERAGE_FIXED) * totalDays + (totalExpense - hireCost)) / H1) *
-      (1 + n(grey.addcom));
+  const freight =
+    ((n(green.hire) * (1 - BROKERAGE_FIXED) * totalDays + (totalExpense - hireCost)) / H1) *
+    (1 + n(grey.addcom));
 
-    const tce =
-      ((((n(green.charterFreight) * (1 - n(grey.addcom))) * H1) - (totalExpense - hireCost)) /
-        totalDays) *
-      (1 + BROKERAGE_FIXED);
+  const tce =
+    ((((n(green.charterFreight) * (1 - n(grey.addcom))) * H1) - (totalExpense - hireCost)) /
+      totalDays) *
+    (1 + BROKERAGE_FIXED);
 
-    const pnl = (n(green.charterFreight) - freight) * H1;
+  const pnl = (n(green.charterFreight) - freight) * H1;
 
-    setCalculated({
-      intake: { loadableQty, intakeQty, restrictedDwt, dwtChange, draftBssSW, draftRestriction },
-      days: { ballastDays, ladenDays, loadingDays, dischargingDays, waitingDays, totalDays },
-      bunkers: { totalVlsfo, totalMgo, bunkerCostVlsfo, bunkerCostMgo },
-      costs: { hireCost, pda, ballastBonus, cve, otherCharges, totalExpense },
-      results: { freight, tce, pnl },
-    });
-  }
+  setCalculated({
+    intake: { loadableQty, intakeQty, restrictedDwt, dwtChange, draftBssSW, draftRestriction },
+    days: { ballastDays, ladenDays, loadingDays, dischargingDays, waitingDays, totalDays },
+    bunkers: { totalVlsfo, totalMgo, bunkerCostVlsfo, bunkerCostMgo },
+    costs: { hireCost, pda, ballastBonus, cve, otherCharges, totalExpense },
+    results: { freight, tce, pnl },
+  });
+}
 
-  const page = "min-h-screen bg-slate-950 text-slate-100";
-  const shell = "mx-auto max-w-7xl px-4 py-6";
-  const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm";
-  const title = "text-xl font-bold";
-  const sub = "text-sm text-slate-300";
-  const label = "mb-1 text-xs font-medium uppercase tracking-wide text-slate-300";
-  const input =
-    "w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20";
-  const btnPrimary =
-    "rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400";
-  const btnGhost =
-    "rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100 hover:border-cyan-400";
+useEffect(() => {
+  if (!grey) return;
+  calculate();
+}, [grey, green]);
 
-  if (loading) {
-    return (
+const page = "min-h-screen bg-slate-950 text-slate-100";
+const shell = "mx-auto max-w-7xl px-4 py-6";
+const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm";
+const title = "text-xl font-bold";
+const sub = "text-sm text-slate-300";
+const label = "mb-1 text-xs font-medium uppercase tracking-wide text-slate-300";
+const input =
+  "w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20";
+const btnPrimary =
+  "rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400";
+const btnGhost =
+  "rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100 hover:border-cyan-400";
+
+if (loading) {
+  return (
+    <div className={page}>
+      <div className={shell}>
+        <div className={card}>
+          <div className={title}>Loading calculator…</div>
+          <div className={sub}>Fetching backend vessel and cargo data.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+if (err) {
+  return (
+    <div className={page}>
+      <div className={shell}>
+        <div className={card}>
+          <div className={title}>Couldn’t load backend data</div>
+          <div className="mt-2 text-sm text-rose-300">{err}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+if (!grey) return null;
+
+return (
   <div className={page}>
     <div className={shell}>
       <div className="mb-5">
@@ -288,7 +320,6 @@ export default function VesselCargoCalculator() {
         <div className={sub}>Live vessel, cargo and voyage freight calculation</div>
       </div>
 
-      {/* Top controls */}
       <div className={`${card} mb-4`}>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
           <div>
@@ -335,15 +366,10 @@ export default function VesselCargoCalculator() {
         </div>
       </div>
 
-      {/* Main layout */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        {/* Left side editable fields */}
         <div className="xl:col-span-9 space-y-4">
-          {/* Vessel */}
           <div className={card}>
-            <div className="mb-3 flex items-center justify-between">
-              <div className="text-base font-semibold">Vessel (Grey editable)</div>
-            </div>
+            <div className="mb-3 text-base font-semibold">Vessel (Grey editable)</div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
               {[
@@ -378,13 +404,11 @@ export default function VesselCargoCalculator() {
             </div>
           </div>
 
-          {/* Cargo + User Inputs */}
           <div className={card}>
             <div className="mb-1 text-base font-semibold">Cargo (Grey editable)</div>
             <div className="mb-3 text-xs text-slate-400">{grey.parameters}</div>
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-              {/* Cargo fields */}
               <div className="xl:col-span-8">
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                   <div className="col-span-2 md:col-span-3">
@@ -446,7 +470,6 @@ export default function VesselCargoCalculator() {
                 </div>
               </div>
 
-              {/* User Inputs */}
               <div className="xl:col-span-4">
                 <div className="mb-3 text-base font-semibold">User Inputs (Green)</div>
                 <div className="grid grid-cols-1 gap-3">
@@ -477,7 +500,6 @@ export default function VesselCargoCalculator() {
           </div>
         </div>
 
-        {/* Right side output panel */}
         <div className="xl:col-span-3">
           <div className={`${card} sticky top-24`}>
             <div className="grid grid-cols-2 gap-6">
