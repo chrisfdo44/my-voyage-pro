@@ -40,6 +40,7 @@ function Home({ onSelectView }: { onSelectView: (v: View) => void }) {
     { id: "voyage", name: "Voyage", icon: Navigation, desc: "Route & Fuel Optimization" },
     { id: "ballast", name: "Ballast", icon: Ship, desc: "DOP Hire Calculation" },
     { id: "openbook", name: "Open Book", icon: FileText, desc: "Freight Cost Breakdown" },
+    { id: "cargo", name: "Cargo Freight", icon: Calculator, desc: "Live vessel & cargo freight calculator" },
   ];
 
   return (
