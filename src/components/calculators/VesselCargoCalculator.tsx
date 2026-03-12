@@ -281,362 +281,261 @@ export default function VesselCargoCalculator() {
 
   if (loading) {
     return (
-      <div className={page}>
-        <div className={shell}>
-          <div className={card}>
-            <div className={title}>Loading calculator…</div>
-            <div className={sub}>Fetching backend vessel and cargo data.</div>
-          </div>
-        </div>
+  <div className={page}>
+    <div className={shell}>
+      <div className="mb-5">
+        <div className={title}>Cargo Freight Calculator</div>
+        <div className={sub}>Live vessel, cargo and voyage freight calculation</div>
       </div>
-    );
-  }
 
-  if (err) {
-    return (
-      <div className={page}>
-        <div className={shell}>
-          <div className={card}>
-            <div className={title}>Couldn’t load backend data</div>
-            <div className="mt-2 text-sm text-rose-300">{err}</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!grey) return null;
-
-  return (
-    <div className={page}>
-      <div className={shell}>
-        <div className="mb-5">
-          <div className={title}>Cargo Freight Calculator</div>
-          <div className={sub}>Live vessel, cargo and voyage freight calculation</div>
-        </div>
-
-        {/* Top controls */}
-        <div className={`${card} mb-4`}>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-            <div>
-              <div className={label}>Vessel Name</div>
-              <select
-                className={input}
-                value={selectedVessel}
-                onChange={(e) => setSelectedVessel(e.target.value)}
-              >
-                {vessels.map((v) => (
-                  <option key={v.vessel} value={v.vessel}>
-                    {v.vessel}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <div className={label}>Account Name</div>
-              <select
-                className={input}
-                value={selectedAccount}
-                onChange={(e) => setSelectedAccount(e.target.value)}
-              >
-                {cargoList.map((c) => (
-                  <option key={c.accountName} value={c.accountName}>
-                    {c.accountName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-end">
-              <button className={`${btnPrimary} w-full`} onClick={calculate} type="button">
-                Calculate
-              </button>
-            </div>
-
-            <div className="flex items-end">
-              <button className={`${btnGhost} w-full`} onClick={resetGreyToBackend} type="button">
-                Reset Backend Values
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Top result cards */}
-        {calculated && (
-          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <div className={card}>
-              <div className="text-xs uppercase tracking-wider text-cyan-400">Loadable Qty</div>
-              <div className="mt-2 text-2xl font-bold text-white">
-                {fmt(calculated.intake.loadableQty, 0)}
-              </div>
-            </div>
-
-            <div className={card}>
-              <div className="text-xs uppercase tracking-wider text-cyan-400">Total Days</div>
-              <div className="mt-2 text-2xl font-bold text-white">
-                {fmt(calculated.days.totalDays, 2)}
-              </div>
-            </div>
-
-            <div className={card}>
-              <div className="text-xs uppercase tracking-wider text-cyan-400">Freight</div>
-              <div className="mt-2 text-2xl font-bold text-white">
-                {fmt(calculated.results.freight, 2)}
-              </div>
-            </div>
-
-            <div className={card}>
-              <div className="text-xs uppercase tracking-wider text-cyan-400">TCE</div>
-              <div className="mt-2 text-2xl font-bold text-white">
-                {fmt(calculated.results.tce, 0)}
-              </div>
-            </div>
-
-            <div className={card}>
-              <div className="text-xs uppercase tracking-wider text-cyan-400">PNL</div>
-              <div className="mt-2 text-2xl font-bold text-white">
-                {fmt(calculated.results.pnl, 0)}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Main visible input layout */}
-        <div className={`${card} mb-4`}>
-          <div className="mb-4 flex items-center justify-between">
-            <div className="text-base font-semibold">User Inputs</div>
-            <button
-              className={btnGhost}
-              onClick={() => setShowAdvanced((s) => !s)}
-              type="button"
+      {/* Top controls */}
+      <div className={`${card} mb-4`}>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <div>
+            <div className={label}>Vessel Name</div>
+            <select
+              className={input}
+              value={selectedVessel}
+              onChange={(e) => setSelectedVessel(e.target.value)}
             >
-              {showAdvanced ? "Hide Advanced Fields" : "Show Advanced Fields"}
+              {vessels.map((v) => (
+                <option key={v.vessel} value={v.vessel}>
+                  {v.vessel}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <div className={label}>Account Name</div>
+            <select
+              className={input}
+              value={selectedAccount}
+              onChange={(e) => setSelectedAccount(e.target.value)}
+            >
+              {cargoList.map((c) => (
+                <option key={c.accountName} value={c.accountName}>
+                  {c.accountName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-end">
+            <button className={`${btnPrimary} w-full`} onClick={calculate} type="button">
+              Calculate
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <div>
-              <div className={label}>VLSFO Price</div>
-              <input
-                className={input}
-                type="number"
-                step="any"
-                value={green.vlsfoPrice}
-                onChange={(e) =>
-                  setGreen((s) => ({ ...s, vlsfoPrice: Number(e.target.value) }))
-                }
-              />
+          <div className="flex items-end">
+            <button className={`${btnGhost} w-full`} onClick={resetGreyToBackend} type="button">
+              Reset Backend Values
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main layout */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        {/* Left side editable fields */}
+        <div className="xl:col-span-9 space-y-4">
+          {/* Vessel */}
+          <div className={card}>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="text-base font-semibold">Vessel (Grey editable)</div>
             </div>
 
-            <div>
-              <div className={label}>MGO Price</div>
-              <input
-                className={input}
-                type="number"
-                step="any"
-                value={green.mgoPrice}
-                onChange={(e) =>
-                  setGreen((s) => ({ ...s, mgoPrice: Number(e.target.value) }))
-                }
-              />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+              {[
+                ["Dwt", "dwt"],
+                ["Draft", "draft"],
+                ["TPC", "tpc"],
+                ["Grain", "grain"],
+                ["Laden Speed", "ladenSpeed"],
+                ["Laden Cons", "ladenCons"],
+                ["Ballast Speed", "ballastSpeed"],
+                ["Ballast Cons", "ballastCons"],
+                ["Sea MGO", "seaMgo"],
+                ["Idle VLSFO", "idleVlsfo"],
+                ["Idle MGO", "idleMgo"],
+                ["Vsl Constant", "vslConstant"],
+                ["Working VLSFO", "workVlsfo"],
+                ["Working MGO", "workMgo"],
+              ].map(([t, k]) => (
+                <div key={k}>
+                  <div className={label}>{t}</div>
+                  <input
+                    className={input}
+                    type="number"
+                    step="any"
+                    value={(grey as any)[k]}
+                    onChange={(e) =>
+                      setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
+                    }
+                  />
+                </div>
+              ))}
             </div>
+          </div>
 
-            <div>
-              <div className={label}>Hire</div>
-              <input
-                className={input}
-                type="number"
-                step="any"
-                value={green.hire}
-                onChange={(e) =>
-                  setGreen((s) => ({ ...s, hire: Number(e.target.value) }))
-                }
-              />
-            </div>
+          {/* Cargo + User Inputs */}
+          <div className={card}>
+            <div className="mb-1 text-base font-semibold">Cargo (Grey editable)</div>
+            <div className="mb-3 text-xs text-slate-400">{grey.parameters}</div>
 
-            <div>
-              <div className={label}>Ballast Bonus</div>
-              <input
-                className={input}
-                type="number"
-                step="any"
-                value={green.ballastBonus}
-                onChange={(e) =>
-                  setGreen((s) => ({ ...s, ballastBonus: Number(e.target.value) }))
-                }
-              />
-            </div>
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+              {/* Cargo fields */}
+              <div className="xl:col-span-8">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                  <div className="col-span-2 md:col-span-3">
+                    <div className={label}>Cargo</div>
+                    <input
+                      className={input}
+                      value={grey.cargo}
+                      onChange={(e) => setGrey((s) => ({ ...s!, cargo: e.target.value }))}
+                    />
+                  </div>
 
-            <div>
-              <div className={label}>Waiting Days</div>
-              <input
-                className={input}
-                type="number"
-                step="any"
-                value={green.waitingDays}
-                onChange={(e) =>
-                  setGreen((s) => ({ ...s, waitingDays: Number(e.target.value) }))
-                }
-              />
-            </div>
+                  {[
+                    ["Quantity", "quantity"],
+                    ["Tolerance", "tolerance"],
+                    ["Other Charges", "otherCharges"],
+                    ["Load Rate", "loadRate"],
+                    ["Discharge Rate", "dischargeRate"],
+                    ["Draft Restriction", "draftRestriction"],
+                    ["LP PDA", "lpPda"],
+                    ["DP PDA", "dpPda"],
+                    ["Sea Margin", "seaMargin"],
+                    ["Ballast Distance", "ballastDistance"],
+                    ["Laden Distance", "ladenDistance"],
+                    ["Total Distance", "totalDistance"],
+                    ["Addcom + Brokerage", "addcom"],
+                    ["Water Density", "waterDensity"],
+                  ].map(([t, k]) => (
+                    <div key={k}>
+                      <div className={label}>{t}</div>
+                      <input
+                        className={input}
+                        type="number"
+                        step="any"
+                        value={(grey as any)[k]}
+                        onChange={(e) =>
+                          setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
+                        }
+                      />
+                    </div>
+                  ))}
 
-            <div>
-              <div className={label}>Charter Frt</div>
-              <input
-                className={input}
-                type="number"
-                step="any"
-                value={green.charterFreight}
-                onChange={(e) =>
-                  setGreen((s) => ({ ...s, charterFreight: Number(e.target.value) }))
-                }
-              />
+                  {[
+                    ["DOP", "dop"],
+                    ["Load Port", "loadPort"],
+                    ["Discharge Port", "dischargePort"],
+                    ["Turn Time", "turnTime"],
+                  ].map(([t, k]) => (
+                    <div key={k} className="col-span-2 md:col-span-3">
+                      <div className={label}>{t}</div>
+                      <input
+                        className={input}
+                        value={(grey as any)[k]}
+                        onChange={(e) =>
+                          setGrey((s) => ({ ...s!, [k]: e.target.value }))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* User Inputs */}
+              <div className="xl:col-span-4">
+                <div className="mb-3 text-base font-semibold">User Inputs (Green)</div>
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    ["VLSFO Price", "vlsfoPrice"],
+                    ["MGO Price", "mgoPrice"],
+                    ["Hire", "hire"],
+                    ["Ballast Bonus", "ballastBonus"],
+                    ["Waiting Days", "waitingDays"],
+                    ["Charter Frt", "charterFreight"],
+                  ].map(([t, k]) => (
+                    <div key={k}>
+                      <div className={label}>{t}</div>
+                      <input
+                        className={input}
+                        type="number"
+                        step="any"
+                        value={(green as any)[k]}
+                        onChange={(e) =>
+                          setGreen((s) => ({ ...s, [k]: Number(e.target.value) }))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Advanced layout */}
-        {showAdvanced && (
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            <div className={card}>
-              <div className="mb-4 text-base font-semibold">Vessel Backend Fields</div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {[
-                  ["Dwt", "dwt"],
-                  ["Draft", "draft"],
-                  ["TPC", "tpc"],
-                  ["Grain", "grain"],
-                  ["Laden Speed", "ladenSpeed"],
-                  ["Laden Cons", "ladenCons"],
-                  ["Ballast Speed", "ballastSpeed"],
-                  ["Ballast Cons", "ballastCons"],
-                  ["Sea MGO", "seaMgo"],
-                  ["Idle VLSFO", "idleVlsfo"],
-                  ["Idle MGO", "idleMgo"],
-                  ["Working VLSFO", "workVlsfo"],
-                  ["Working MGO", "workMgo"],
-                  ["Vsl Constant", "vslConstant"],
-                ].map(([t, k]) => (
-                  <div key={k}>
-                    <div className={label}>{t}</div>
-                    <input
-                      className={input}
-                      type="number"
-                      step="any"
-                      value={(grey as any)[k]}
-                      onChange={(e) =>
-                        setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
-                      }
-                    />
+        {/* Right side output panel */}
+        <div className="xl:col-span-3">
+          <div className={`${card} sticky top-24`}>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <div className="text-lg font-semibold text-white">Intake</div>
+                <div className="mt-4 space-y-4 text-sm text-slate-300">
+                  <div>
+                    <div className="text-slate-400">Loadable Qty</div>
+                    <div className="text-xl font-bold text-white">
+                      {calculated ? fmt(calculated.intake.loadableQty, 0) : "-"}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <div className={card}>
-              <div className="mb-1 text-base font-semibold">Cargo Backend Fields</div>
-              <div className="mb-4 text-xs text-slate-400">{grey.parameters}</div>
-
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <div className={label}>Cargo</div>
-                  <input
-                    className={input}
-                    value={grey.cargo}
-                    onChange={(e) => setGrey((s) => ({ ...s!, cargo: e.target.value }))}
-                  />
+                  <div>
+                    <div className="text-lg font-semibold text-white">Days</div>
+                    <div className="mt-2 text-slate-400">Total Days</div>
+                    <div className="text-xl font-bold text-white">
+                      {calculated ? fmt(calculated.days.totalDays, 2) : "-"}
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                {[
-                  ["Quantity", "quantity"],
-                  ["Tolerance", "tolerance"],
-                  ["Load Rate", "loadRate"],
-                  ["Discharge Rate", "dischargeRate"],
-                  ["LP PDA", "lpPda"],
-                  ["DP PDA", "dpPda"],
-                  ["Other Charges", "otherCharges"],
-                  ["Draft Restriction", "draftRestriction"],
-                  ["Sea Margin", "seaMargin"],
-                  ["Ballast Distance", "ballastDistance"],
-                  ["Laden Distance", "ladenDistance"],
-                  ["Total Distance", "totalDistance"],
-                  ["Addcom + Brokerage", "addcom"],
-                  ["Water Density", "waterDensity"],
-                ].map(([t, k]) => (
-                  <div key={k}>
-                    <div className={label}>{t}</div>
-                    <input
-                      className={input}
-                      type="number"
-                      step="any"
-                      value={(grey as any)[k]}
-                      onChange={(e) =>
-                        setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
-                      }
-                    />
+              <div>
+                <div className="text-lg font-semibold text-white">Results</div>
+                <div className="mt-4 space-y-4 text-sm text-slate-300">
+                  <div>
+                    <div className="text-slate-400">Freight</div>
+                    <div className="text-xl font-bold text-white">
+                      {calculated ? fmt(calculated.results.freight, 2) : "-"}
+                    </div>
                   </div>
-                ))}
 
-                {[
-                  ["Load Port", "loadPort"],
-                  ["Discharge Port", "dischargePort"],
-                  ["Turn Time", "turnTime"],
-                  ["DOP", "dop"],
-                ].map(([t, k]) => (
-                  <div key={k} className="md:col-span-2">
-                    <div className={label}>{t}</div>
-                    <input
-                      className={input}
-                      value={(grey as any)[k]}
-                      onChange={(e) =>
-                        setGrey((s) => ({ ...s!, [k]: e.target.value }))
-                      }
-                    />
+                  <div>
+                    <div className="text-slate-400">TCE</div>
+                    <div className="text-xl font-bold text-white">
+                      {calculated ? fmt(calculated.results.tce, 0) : "-"}
+                    </div>
                   </div>
-                ))}
+
+                  <div>
+                    <div className="text-slate-400">PNL</div>
+                    <div className="text-xl font-bold text-white">
+                      {calculated ? fmt(calculated.results.pnl, 0) : "-"}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {calculated && (
+              <div className="mt-6 border-t border-slate-800 pt-4 text-xs text-slate-400">
+                Editable fields on the left update this panel automatically.
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Detail summary */}
-        {calculated && (
-          <div className={`${card} mt-4`}>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <div>
-                <div className="text-base font-semibold">Intake</div>
-                <div className="mt-2 space-y-1 text-sm text-slate-300">
-                  <div>Loadable Qty: <b>{fmt(calculated.intake.loadableQty, 0)}</b></div>
-                  <div>Intake Qty: {fmt(calculated.intake.intakeQty, 0)}</div>
-                  <div>Restricted DWT: {fmt(calculated.intake.restrictedDwt, 0)}</div>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-base font-semibold">Days</div>
-                <div className="mt-2 space-y-1 text-sm text-slate-300">
-                  <div>Total Days: <b>{fmt(calculated.days.totalDays, 2)}</b></div>
-                  <div>Ballast: {fmt(calculated.days.ballastDays, 2)}</div>
-                  <div>Laden: {fmt(calculated.days.ladenDays, 2)}</div>
-                  <div>Load: {fmt(calculated.days.loadingDays, 2)}</div>
-                  <div>Disch: {fmt(calculated.days.dischargingDays, 2)}</div>
-                  <div>Wait: {fmt(calculated.days.waitingDays, 2)}</div>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-base font-semibold">Result Summary</div>
-                <div className="mt-2 space-y-1 text-sm text-slate-300">
-                  <div>Freight: <b>{fmt(calculated.results.freight, 2)}</b></div>
-                  <div>TCE: <b>{fmt(calculated.results.tce, 0)}</b></div>
-                  <div>PNL: <b>{fmt(calculated.results.pnl, 0)}</b></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
-  );
-}
+  </div>
+);
