@@ -8,7 +8,7 @@ import { OpenBookCalc } from "./components/calculators/OpenBookCalc";
 import VesselCargoCalculator from "./components/calculators/VesselCargoCalculator";
 import { Ship, Calculator, FileText, Navigation, Anchor, LogIn, ArrowRight } from "lucide-react";
 
-type View = "home" | "intake" | "voyage" | "ballast" | "openbook" | "auth";
+type View = "home" | "intake" | "voyage" | "ballast" | "openbook" | "cargo" | "auth";
 
 export default function App() {
   const [view, setView] = useState<View>("home");
@@ -16,6 +16,7 @@ export default function App() {
   const renderView = () => {
     switch (view) {
       case "intake": return <IntakeCalc />;
+      case "cargo": return <VesselCargoCalculator />;
       case "voyage": return <VoyageCalc />;
       case "ballast": return <BallastCalc />;
       case "openbook": return <OpenBookCalc />;
