@@ -107,7 +107,7 @@ function normalizeCargoRow(row: any): CargoRow {
     dischargePort: pick(row, ["Discharge Port"]) ?? "",
     dischargeRate: toNumber(pick(row, ["Discharge Rate"])),
     turnTime: pick(row, ["Turn Time"]) ?? "",
-    addcom: toNumber(pick(row, ["Addcom+ brok", "Addcom + Brokerage", "Addcom"])),
+    addcom: toNumber(pick(row, ["Addcom+ brok", "Addcom+ brokerage", "Addcom"])),
     lpPda: toNumber(pick(row, ["LP PDA"])),
     dpPda: toNumber(pick(row, ["DP PDA"])),
     otherCharges: toNumber(pick(row, ["Other Charges"])),
