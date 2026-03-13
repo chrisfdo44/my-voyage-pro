@@ -647,4 +647,4 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
     </div>
   </div>
 );
-  }
+}
