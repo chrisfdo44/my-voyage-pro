@@ -46,7 +46,8 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
   const navItems = [
     { id: "home", label: "Dashboard" },
     { id: "intake", label: "Intake" },
-    { id: "voyage", label: "Voyage" },
+    { id: "voyage", label: "Mini Voyage" },
+    { id: "cargo", label: "Cargo Freight" },
     { id: "ballast", label: "Ballast" },
     { id: "openbook", label: "Open Book" },
     
