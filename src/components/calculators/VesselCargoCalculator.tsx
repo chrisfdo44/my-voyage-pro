@@ -212,7 +212,11 @@ export default function VesselCargoCalculator() {
     const dwtChange = draftRestriction < draftBssSW ? draftBssSW - draftRestriction : 0;
     const restrictedDwt = dwtChange * n(grey.tpc) * 100;
     const intakeQty = n(grey.dwt) - restrictedDwt;
-    const loadableQty = intakeQty - n(grey.vslConstant);
+
+    const loadableQtyByVessel = intakeQty - n(grey.vslConstant);
+    const cargoQtyMax = n(grey.quantity) * (1 + n(grey.tolerance));
+
+    const loadableQty = Math.min(loadableQtyByVessel, cargoQtyMax);
     const H1 = loadableQty;
 
     const ballastDays =
