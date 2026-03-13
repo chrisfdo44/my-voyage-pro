@@ -400,7 +400,7 @@ export default function VesselCargoCalculator() {
               ["MGO Price", "mgoPrice"],
               ["Hire", "hire"],
               ["Ballast Bonus", "ballastBonus"],
-              ["Waiting Days", "waitingDays"],
+              ["TT and Bunkering Days", "waitingDays"],
               ["Charter Frt", "charterFreight"],
             ].map(([t, k]) => (
               <div key={k}>
