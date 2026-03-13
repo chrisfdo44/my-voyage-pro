@@ -64,9 +64,14 @@ function fmt(num: number, decimals = 2) {
   });
 }
 
-function displayValue(value: number | string) {
-  if (typeof value === "number") return String(value);
-  return value ?? "";
+function percentDisplay(value: number) {
+  if (!value && value !== 0) return "";
+  return (value * 100).toString();
+}
+
+function percentInput(value: string) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num / 100 : 0;
 }
 
 export default function VesselCargoCalculator() {
@@ -557,9 +562,9 @@ return (
                   className={input}
                   type="number"
                   step="any"
-                  value={displayValue((grey as any)[k])}
+                  value={percentDisplay((grey as any)[k])}
                   onChange={(e) =>
-                    setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
+                  setGrey((s) => ({ ...s!, [k]: percentInput(e.target.value) }))
                   }
                 />
               </div>
@@ -601,9 +606,9 @@ return (
                   className={input}
                   type="number"
                   step="any"
-                  value={displayValue((grey as any)[k])}
+                  value={percentDisplay((grey as any)[k])}
                   onChange={(e) =>
-                    setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
+                  setGrey((s) => ({ ...s!, [k]: percentInput(e.target.value) }))
                   }
                 />
               </div>
@@ -623,9 +628,9 @@ return (
                   className={input}
                   type="number"
                   step="any"
-                  value={displayValue((grey as any)[k])}
+                  value={percentDisplay((grey as any)[k])}
                   onChange={(e) =>
-                    setGrey((s) => ({ ...s!, [k]: Number(e.target.value) }))
+                  setGrey((s) => ({ ...s!, [k]: percentInput(e.target.value) }))
                   }
                 />
               </div>
