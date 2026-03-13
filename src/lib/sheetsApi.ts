@@ -64,11 +64,24 @@ function toNumber(value: any): number {
 }
 
 function pick(row: any, keys: string[]) {
-  for (const key of keys) {
-    if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
-      return row[key];
+  const rowKeys = Object.keys(row);
+
+  for (const wanted of keys) {
+    const exact = rowKeys.find((k) => k === wanted);
+    if (exact && row[exact] !== undefined && row[exact] !== null && row[exact] !== "") {
+      return row[exact];
+    }
+
+    const normalizedWanted = wanted.trim().toLowerCase().replace(/\s+/g, " ");
+    const loose = rowKeys.find(
+      (k) => k.trim().toLowerCase().replace(/\s+/g, " ") === normalizedWanted
+    );
+
+    if (loose && row[loose] !== undefined && row[loose] !== null && row[loose] !== "") {
+      return row[loose];
     }
   }
+
   return undefined;
 }
 
