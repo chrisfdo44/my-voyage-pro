@@ -234,8 +234,8 @@ export default function VesselCargoCalculator() {
 
     const totalDays =
       ballastDays + ladenDays + loadingDays + dischargingDays + waitingDays;
-const totalVlsfo =
-  ballastVlsfo + ladenVlsfo + loadingVlsfo + dischargingVlsfo + waitingVlsfo;
+    const totalVlsfo =
+      ballastVlsfo + ladenVlsfo + loadingVlsfo + dischargingVlsfo + waitingVlsfo;
     const totalMgo =
       ballastMgo + ladenMgo + loadingMgo + dischargingMgo + waitingMgo;
 
