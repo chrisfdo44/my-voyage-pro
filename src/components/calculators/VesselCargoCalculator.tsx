@@ -277,7 +277,7 @@ const totalVlsfo =
   }, [grey, green]);
 
 const page = "min-h-screen bg-slate-950 text-slate-100";
-const shell = "mx-auto max-w-7xl px-4 py-6";
+const shell = "mx-auto max-w-screen-xl px-4 py-6";
 const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm";
 const title = "text-2xl font-bold tracking-tight text-white";
 const sub = "text-xs uppercase tracking-[0.22em] text-cyan-400/80";
