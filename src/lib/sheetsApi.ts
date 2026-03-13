@@ -50,58 +50,74 @@ function toNumber(value: any): number {
 
   const str = String(value).trim().replace(/,/g, "");
 
-  // Handle percentages like "10%" or "1.25%" or "7%"
+  if (str === "") return 0;
+
+  // Handle percentages
   if (str.endsWith("%")) {
     const num = Number(str.replace("%", ""));
     return Number.isFinite(num) ? num / 100 : 0;
   }
 
+  // Clean leading zeros safely for numeric-looking strings
   const num = Number(str);
   return Number.isFinite(num) ? num : 0;
 }
 
+function pick(row: any, keys: string[]) {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+      return row[key];
+    }
+  }
+  return undefined;
+}
+
 function normalizeVesselRow(row: any): VesselRow {
   return {
-    vessel: row["Vessel"] ?? "",
-    dwt: toNumber(row["Dwt"]),
-    draft: toNumber(row["Draft"]),
-    tpc: toNumber(row["TPC"]),
-    grain: toNumber(row["Grain"]),
-    ladenSpeed: toNumber(row["Laden Speed"]),
-    ladenCons: toNumber(row["Laden Consumption"]),
-    ballastSpeed: toNumber(row["Ballast Speed"]),
-    ballastCons: toNumber(row["Ballast Consumption"]),
-    seaMgo: toNumber(row["Sea MGO"]),
-    idleVlsfo: toNumber(row["Idle VLSFO"]),
-    idleMgo: toNumber(row["Idle MGO"]),
-    workVlsfo: toNumber(row["Working VLSFO"]),
-    workMgo: toNumber(row["Working MGO"]),
-    vslConstant: toNumber(row["Vsl Constant"]),
+    vessel: pick(row, ["Vessel"]) ?? "",
+    dwt: toNumber(pick(row, ["Dwt"])),
+    draft: toNumber(pick(row, ["Draft"])),
+    tpc: toNumber(pick(row, ["TPC"])),
+    grain: toNumber(pick(row, ["Grain"])),
+    ladenSpeed: toNumber(pick(row, ["Laden Speed"])),
+    ladenCons: toNumber(
+      pick(row, ["Laden Consumption", "Laden Consump", "Laden Consum", "Laden Cons"])
+    ),
+    ballastSpeed: toNumber(pick(row, ["Ballast Speed"])),
+    ballastCons: toNumber(
+      pick(row, ["Ballast Consumption", "Ballast Consump", "Ballast Consun", "Ballast Cons"])
+    ),
+    seaMgo: toNumber(pick(row, ["Sea MGO"])),
+    idleVlsfo: toNumber(pick(row, ["Idle VLSFO"])),
+    idleMgo: toNumber(pick(row, ["Idle MGO"])),
+    workVlsfo: toNumber(pick(row, ["Working VLSFO"])),
+    workMgo: toNumber(pick(row, ["Working MGO"])),
+    vslConstant: toNumber(pick(row, ["Vsl Constant", "Vessel Constant"])),
   };
 }
 
 function normalizeCargoRow(row: any): CargoRow {
   return {
-    accountName: row["Account Name"] ?? "",
-    cargo: row["Cargo"] ?? "",
-    quantity: toNumber(row["Quantity"]),
-    tolerance: toNumber(row["Tolarence"]),
-    loadPort: row["Load Port"] ?? "",
-    loadRate: toNumber(row["Load Rate"]),
-    dischargePort: row["Discharge Port"] ?? "",
-    dischargeRate: toNumber(row["Discharge Rate"]),
-    turnTime: row["Turn Time"] ?? "",
-    addcom: toNumber(row["Addcom+ brok"]),
-    lpPda: toNumber(row["LP PDA"]),
-    dpPda: toNumber(row["DP PDA"]),
-    otherCharges: toNumber(row["Other Charges"]),
-    draftRestriction: toNumber(row["Draft Restriction"]),
-    seaMargin: toNumber(row["Sea Margin"]),
-    dop: row["Dop"] ?? "",
-    ballastDistance: toNumber(row["Ballast Distance"]),
-    ladenDistance: toNumber(row["Laden Distance"]),
-    totalDistance: toNumber(row["Total"]),
-    parameters: row["Parameters"] ?? "",
+    accountName: pick(row, ["Account Name"]) ?? "",
+    cargo: pick(row, ["Cargo"]) ?? "",
+    quantity: toNumber(pick(row, ["Quantity"])),
+    tolerance: toNumber(pick(row, ["Tolarence", "Tolerance"])),
+    loadPort: pick(row, ["Load Port"]) ?? "",
+    loadRate: toNumber(pick(row, ["Load Rate"])),
+    dischargePort: pick(row, ["Discharge Port"]) ?? "",
+    dischargeRate: toNumber(pick(row, ["Discharge Rate"])),
+    turnTime: pick(row, ["Turn Time"]) ?? "",
+    addcom: toNumber(pick(row, ["Addcom+ brok", "Addcom + Brokerage", "Addcom"])),
+    lpPda: toNumber(pick(row, ["LP PDA"])),
+    dpPda: toNumber(pick(row, ["DP PDA"])),
+    otherCharges: toNumber(pick(row, ["Other Charges"])),
+    draftRestriction: toNumber(pick(row, ["Draft Restriction"])),
+    seaMargin: toNumber(pick(row, ["Sea Margin"])),
+    dop: pick(row, ["Dop", "DOP"]) ?? "",
+    ballastDistance: toNumber(pick(row, ["Ballast Distance"])),
+    ladenDistance: toNumber(pick(row, ["Laden Distance"])),
+    totalDistance: toNumber(pick(row, ["Total"])),
+    parameters: pick(row, ["Parameters"]) ?? "",
   };
 }
 
@@ -117,13 +133,7 @@ export async function fetchBackendFromWebApp(webAppUrl: string): Promise<Backend
     raw = JSON.parse(txt);
   }
 
-  // Supports:
-  // 1) { vessels:[...], cargo:[...] }
-  // 2) { data:{ vessels:[...], cargo:[...] } }
-  // 3) { vesselData:[...], cargoData:[...] }
-  // 4) raw array wrappers if your Apps Script uses different naming
   const data = raw?.data ?? raw;
-
   const vesselSource = data.vessels ?? data.vesselData ?? [];
   const cargoSource = data.cargo ?? data.cargoData ?? [];
 
