@@ -295,7 +295,34 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
     pnlValue > 0 ? "text-emerald-400" : pnlValue < 0 ? "text-rose-400" : "text-white";
 
   if (loading) {
-    return (
+  return (
+    <div className={page}>
+      <div className={shell}>
+        <div className={card}>
+          <div className={title}>Loading calculator…</div>
+          <div className={sub}>Fetching backend vessel and cargo data.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+if (err) {
+  return (
+    <div className={page}>
+      <div className={shell}>
+        <div className={card}>
+          <div className={title}>Couldn’t load backend data</div>
+          <div className="mt-2 text-sm text-rose-300">{err}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+if (!grey) return null;
+
+return (
   <div className={page}>
     <div className={shell}>
       <div className="mb-6">
@@ -431,13 +458,11 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
 
       {/* Main Body */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        {/* Vessel Parameters */}
         <div className={card}>
           <div className="mb-4 flex items-center justify-between">
             <div className={sectionTitle}>Vessel Parameters</div>
           </div>
 
-          {/* Row 1 */}
           <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-5">
             {[
               ["DWT", "dwt"],
@@ -461,7 +486,6 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
             ))}
           </div>
 
-          {/* Row 2 */}
           <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-5">
             {[
               ["Laden Speed", "ladenSpeed"],
@@ -485,7 +509,6 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
             ))}
           </div>
 
-          {/* Row 3 */}
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {[
               ["Idle VLSFO", "idleVlsfo"],
@@ -509,13 +532,11 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
           </div>
         </div>
 
-        {/* Cargo Parameters */}
         <div className={card}>
           <div className="mb-4 flex items-center justify-between">
             <div className={sectionTitle}>Cargo Parameters</div>
           </div>
 
-          {/* Row 1 */}
           <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div>
               <div className={label}>Cargo</div>
@@ -545,7 +566,6 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
             ))}
           </div>
 
-          {/* Row 2 */}
           <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {[
               ["Load Rate", "loadRate"],
@@ -568,7 +588,6 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
             ))}
           </div>
 
-          {/* Row 3 */}
           <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {[
               ["Ballast Distance", "ballastDistance"],
@@ -591,7 +610,6 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
             ))}
           </div>
 
-          {/* Row 4 */}
           <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {[
               ["Other Charges", "otherCharges"],
@@ -614,7 +632,6 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
             ))}
           </div>
 
-          {/* Row 5 */}
           <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {[
               ["DOP", "dop"],
@@ -635,7 +652,6 @@ const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-s
             ))}
           </div>
 
-          {/* Remarks */}
           <div>
             <div className={label}>Remarks</div>
             <div className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-slate-300">
