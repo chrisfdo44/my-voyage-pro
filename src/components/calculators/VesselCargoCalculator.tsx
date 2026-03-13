@@ -457,7 +457,7 @@ return (
       </div>
 
       {/* Main Body */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4">
         <div className={card}>
           <div className="mb-4 flex items-center justify-between">
             <div className={sectionTitle}>Vessel Parameters</div>
