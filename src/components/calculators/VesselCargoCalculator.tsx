@@ -276,12 +276,13 @@ const totalVlsfo =
     calculate();
   }, [grey, green]);
 
-  const page = "min-h-screen bg-slate-950 text-slate-100";
-  const shell = "mx-auto max-w-7xl px-4 py-6";
-  const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm";
-  const title = "text-xl font-bold";
-  const sub = "text-sm text-slate-300";
-  const label = "mb-1 text-xs font-medium uppercase tracking-wide text-slate-300";
+const page = "min-h-screen bg-slate-950 text-slate-100";
+const shell = "mx-auto max-w-7xl px-4 py-6";
+const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm";
+const title = "text-2xl font-bold tracking-tight text-white";
+const sub = "text-xs uppercase tracking-[0.22em] text-cyan-400/80";
+const sectionTitle = "text-lg font-semibold tracking-wide text-white";
+const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300";
   const input =
     "w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20";
   const btnPrimary =
