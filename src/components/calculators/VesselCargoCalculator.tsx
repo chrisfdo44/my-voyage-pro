@@ -365,7 +365,7 @@ const btnGhost =
   if (loading) {
     return (
       <div className={page}>
-        <div className={shell}>
+        <div className={shell} ref={reportRef}>
           <div className={card}>
             <div className={title}>Loading calculator…</div>
             <div className={sub}>Fetching backend vessel and cargo data.</div>
@@ -478,7 +478,7 @@ const btnGhost =
             ))}
           </div>
         </div>
-<div ref={reportRef}>
+
         {/* Result Cards */}
 <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
 
@@ -595,7 +595,6 @@ const btnGhost =
         </span>
       )}
     </div>
-  </div>
 </div>
   </div>
         <div className="grid grid-cols-1 gap-6">
