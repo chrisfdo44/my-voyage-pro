@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { fetchBackendFromWebApp, type CargoRow, type VesselRow } from "../../lib/sheetsApi";
+import html2canvas from "html2canvas";
 
 type GreyEditable = {
   dwt: number;
@@ -107,7 +108,24 @@ export default function VesselCargoCalculator() {
   });
 
   const [calculated, setCalculated] = useState<any | null>(null);
+const reportRef = useRef<HTMLDivElement | null>(null);
 
+async function captureScreenshot() {
+  if (!reportRef.current) return;
+
+  const canvas = await html2canvas(reportRef.current, {
+    backgroundColor: null,
+    scale: 2,
+    useCORS: true,
+  });
+
+  const image = canvas.toDataURL("image/png");
+
+  const link = document.createElement("a");
+  link.href = image;
+  link.download = `voyage-report-${new Date().toISOString().slice(0,10)}.png`;
+  link.click();
+}
   useEffect(() => {
     let mounted = true;
 
@@ -346,7 +364,7 @@ const btnGhost =
         </div>
 
         <div className={`${card} mb-4`}>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
             <div>
               <div className={label}>Vessel Name</div>
               <select
@@ -388,6 +406,11 @@ const btnGhost =
                 Reset Backend Values
               </button>
             </div>
+            <div className="flex items-end">
+  <button className={`${btnGhost} w-full`} onClick={captureScreenshot} type="button">
+    Capture Screenshot
+  </button>
+</div>
           </div>
         </div>
 
@@ -420,7 +443,7 @@ const btnGhost =
             ))}
           </div>
         </div>
-
+<div ref={reportRef}>
         {/* Result Cards */}
 <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
 
@@ -539,6 +562,7 @@ const btnGhost =
     </div>
   </div>
 </div>
+  </div>
         <div className="grid grid-cols-1 gap-6">
           <div className={card}>
             <div className="mb-4 flex items-center justify-between">
