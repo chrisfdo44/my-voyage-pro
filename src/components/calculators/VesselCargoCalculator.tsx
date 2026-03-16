@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { fetchBackendFromWebApp, type CargoRow, type VesselRow } from "../../lib/sheetsApi";
 import html2canvas from "html2canvas";
 
