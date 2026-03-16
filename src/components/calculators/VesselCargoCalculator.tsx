@@ -425,7 +425,7 @@ export default function VesselCargoCalculator() {
               Loadable Qty
             </div>
             <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? fmt(calculated.intake.loadableQty, 0) : "-"}
+              {calculated ? `${fmt(calculated.intake.loadableQty, 0)} MT` : "-"}
             </div>
           </div>
 
@@ -434,7 +434,7 @@ export default function VesselCargoCalculator() {
               Total Days
             </div>
             <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? fmt(calculated.days.totalDays, 2) : "-"}
+              {calculated ? `${fmt(calculated.days.totalDays, 2)} Days` : "-"}
             </div>
           </div>
 
@@ -443,7 +443,7 @@ export default function VesselCargoCalculator() {
               Freight
             </div>
             <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? fmt(calculated.results.freight, 2) : "-"}
+              {calculated ? `USD ${fmt(calculated.results.freight, 2)}` : "-"}
             </div>
           </div>
 
@@ -452,7 +452,7 @@ export default function VesselCargoCalculator() {
               TCE
             </div>
             <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? fmt(calculated.results.tce, 0) : "-"}
+              {calculated ? `USD ${fmt(calculated.results.tce, 0)}` : "-"}
             </div>
           </div>
 
@@ -461,7 +461,7 @@ export default function VesselCargoCalculator() {
               PNL
             </div>
             <div className={`mt-3 text-4xl font-semibold tracking-tight ${pnlColor}`}>
-              {calculated ? fmt(calculated.results.pnl, 0) : "-"}
+              {calculated ? `USD ${fmt(calculated.results.pnl, 0)}` : "-"}
             </div>
           </div>
         </div>
