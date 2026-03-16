@@ -71,7 +71,7 @@ function displayValue(value: number | string) {
 
 function percentDisplay(value: number) {
   if (!value && value !== 0) return "";
-  return String(value * 100);
+  return Number((value * 100).toFixed(2)).toString();
 }
 
 function percentInput(value: string) {
