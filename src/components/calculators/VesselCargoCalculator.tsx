@@ -111,20 +111,58 @@ export default function VesselCargoCalculator() {
 const reportRef = useRef<HTMLDivElement | null>(null);
 
 async function captureScreenshot() {
-  if (!reportRef.current) return;
+  try {
+    if (!reportRef.current) {
+      alert("Report section not found");
+      return;
+    }
 
-  const canvas = await html2canvas(reportRef.current, {
-    backgroundColor: null,
-    scale: 2,
-    useCORS: true,
-  });
+    const canvas = await html2canvas(reportRef.current, {
+      backgroundColor: "#020817",
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      onclone: (_doc, clonedElement) => {
+        const el = clonedElement as HTMLElement;
 
-  const image = canvas.toDataURL("image/png");
+        el.style.background = "#020817";
+        el.style.color = "#f8fafc";
 
-  const link = document.createElement("a");
-  link.href = image;
-  link.download = `voyage-report-${new Date().toISOString().slice(0,10)}.png`;
-  link.click();
+        const all = el.querySelectorAll("*");
+        all.forEach((node) => {
+          const htmlNode = node as HTMLElement;
+
+          htmlNode.style.boxShadow = "none";
+
+          const computed = window.getComputedStyle(htmlNode);
+
+          if (computed.backgroundColor.includes("oklch")) {
+            htmlNode.style.backgroundColor = "#0f172a";
+          }
+
+          if (computed.borderColor.includes("oklch")) {
+            htmlNode.style.borderColor = "#334155";
+          }
+
+          if (computed.color.includes("oklch")) {
+            htmlNode.style.color = "#e2e8f0";
+          }
+        });
+      },
+    });
+
+    const image = canvas.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = `voyage-report-${new Date().toISOString().slice(0, 10)}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error("Screenshot error:", error);
+    alert("Screenshot failed. Check browser console.");
+  }
 }
   useEffect(() => {
     let mounted = true;
