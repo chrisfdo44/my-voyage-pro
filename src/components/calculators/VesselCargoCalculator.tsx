@@ -387,7 +387,7 @@ const btnGhost =
       </div>
     );
   }
-
+<div ref={reportRef}>
   if (!grey) return null;
 
   return (
