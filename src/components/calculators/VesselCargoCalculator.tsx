@@ -345,7 +345,7 @@ const btnGhost =
   if (loading) {
     return (
       <div className={page}>
-        <div className={shell}
+        <div className={shell}>
           <div className={card}>
             <div className={title}>Loading calculator…</div>
             <div className={sub}>Fetching backend vessel and cargo data.</div>
