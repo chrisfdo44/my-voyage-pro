@@ -372,7 +372,7 @@ const btnGhost =
 
   return (
     <div className={page}>
-      <div className={shell}> ref={reportRef}>
+      <div className={shell} ref={reportRef}>
         <div className="mb-6">
           <div className={title}>Cargo Freight Calculator</div>
           <div className={sub}>Route & Freight Analysis</div>
