@@ -289,19 +289,21 @@ export default function VesselCargoCalculator() {
     calculate();
   }, [grey, green]);
 
-  const page = "min-h-screen bg-slate-950 text-slate-100";
-  const shell = "mx-auto max-w-screen-xl px-4 py-6";
-  const card = "rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm";
-  const title = "text-2xl font-bold tracking-tight text-white";
-  const sub = "text-xs uppercase tracking-[0.22em] text-cyan-400/80";
-  const sectionTitle = "text-lg font-semibold tracking-wide text-white";
-  const label = "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300";
-  const input =
-    "w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20";
-  const btnPrimary =
-    "rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400";
-  const btnGhost =
-    "rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100 hover:border-cyan-400";
+const page = "min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100";
+const shell = "mx-auto max-w-screen-xl px-4 py-6";
+const card =
+  "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60";
+const title = "text-2xl font-bold tracking-tight text-slate-900 dark:text-white";
+const sub = "text-xs uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400/80";
+const sectionTitle = "text-lg font-semibold tracking-wide text-slate-900 dark:text-white";
+const label =
+  "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300";
+const input =
+  "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
+const btnPrimary =
+  "rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400";
+const btnGhost =
+  "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 hover:border-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:border-cyan-400";
 
   const pnlValue = calculated?.results?.pnl ?? 0;
   const pnlColor =
@@ -424,54 +426,54 @@ export default function VesselCargoCalculator() {
 
   {/* Loadable Qty */}
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       Loadable Qty
     </div>
-    <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
+    <div className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated ? fmt(calculated.intake.loadableQty, 0) : "-"}
     </div>
-    <div className="mt-1 text-xs text-slate-400">MT</div>
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">MT</div>
   </div>
 
   {/* Total Days */}
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       Total Days
     </div>
-    <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
+    <div className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated ? fmt(calculated.days.totalDays, 2) : "-"}
     </div>
-    <div className="mt-1 text-xs text-slate-400">Days</div>
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
   </div>
 
   {/* Freight */}
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       Freight
     </div>
-    <div className="mt-1 text-xs text-slate-400">USD</div>
-    <div className="text-4xl font-semibold tracking-tight text-white">
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD</div>
+    <div className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated ? fmt(calculated.results.freight, 2) : "-"}
     </div>
   </div>
 
   {/* TCE */}
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       TCE
     </div>
-    <div className="mt-1 text-xs text-slate-400">USD / Day</div>
-    <div className="text-4xl font-semibold tracking-tight text-white">
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD / Day</div>
+    <div className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated ? fmt(calculated.results.tce, 0) : "-"}
     </div>
   </div>
 
   {/* PNL */}
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       PNL
     </div>
-    <div className="mt-1 text-xs text-slate-400">USD</div>
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD</div>
     <div className={`text-4xl font-semibold tracking-tight ${pnlColor}`}>
       {calculated ? fmt(calculated.results.pnl, 0) : "-"}
     </div>
@@ -482,30 +484,30 @@ export default function VesselCargoCalculator() {
         {/* Voyage Summary */}
 <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       Ballast Days
     </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated ? fmt(calculated.days.ballastDays, 2) : "-"}
     </div>
-    <div className="mt-1 text-xs text-slate-400">Days</div>
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
   </div>
 
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       Laden Days
     </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated ? fmt(calculated.days.ladenDays, 2) : "-"}
     </div>
-    <div className="mt-1 text-xs text-slate-400">Days</div>
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
   </div>
 
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       Port Days
     </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated
         ? fmt(
             calculated.days.loadingDays +
@@ -515,19 +517,19 @@ export default function VesselCargoCalculator() {
           )
         : "-"}
     </div>
-    <div className="mt-1 text-xs text-slate-400">Days</div>
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
   </div>
 
   <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
       Total Bunker
     </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
       {calculated
         ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2)
         : "-"}
     </div>
-    <div className="mt-1 text-xs text-slate-400">
+    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
       MT
       {calculated && (
         <span className="ml-2 text-slate-500">
@@ -806,7 +808,7 @@ export default function VesselCargoCalculator() {
 
             <div>
               <div className={label}>Remarks</div>
-              <div className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-slate-300">
+              <div className="rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
                 {grey.parameters || "-"}
               </div>
             </div>
