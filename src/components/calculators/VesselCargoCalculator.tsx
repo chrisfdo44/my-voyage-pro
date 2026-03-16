@@ -419,53 +419,65 @@ export default function VesselCargoCalculator() {
           </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <div className={card}>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
-              Loadable Qty
-            </div>
-            <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? `${fmt(calculated.intake.loadableQty, 0)} MT` : "-"}
-            </div>
-          </div>
+        {/* Result Cards */}
+<div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
 
-          <div className={card}>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
-              Total Days
-            </div>
-            <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? `${fmt(calculated.days.totalDays, 2)} Days` : "-"}
-            </div>
-          </div>
+  {/* Loadable Qty */}
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      Loadable Qty
+    </div>
+    <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      {calculated ? fmt(calculated.intake.loadableQty, 0) : "-"}
+    </div>
+    <div className="mt-1 text-xs text-slate-400">MT</div>
+  </div>
 
-          <div className={card}>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
-              Freight
-            </div>
-            <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? `USD ${fmt(calculated.results.freight, 2)}` : "-"}
-            </div>
-          </div>
+  {/* Total Days */}
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      Total Days
+    </div>
+    <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
+      {calculated ? fmt(calculated.days.totalDays, 2) : "-"}
+    </div>
+    <div className="mt-1 text-xs text-slate-400">Days</div>
+  </div>
 
-          <div className={card}>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
-              TCE
-            </div>
-            <div className="mt-3 text-4xl font-semibold tracking-tight text-white">
-              {calculated ? `USD ${fmt(calculated.results.tce, 0)}` : "-"}
-            </div>
-          </div>
+  {/* Freight */}
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      Freight
+    </div>
+    <div className="mt-1 text-xs text-slate-400">USD</div>
+    <div className="text-4xl font-semibold tracking-tight text-white">
+      {calculated ? fmt(calculated.results.freight, 2) : "-"}
+    </div>
+  </div>
 
-          <div className={card}>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
-              PNL
-            </div>
-            <div className={`mt-3 text-4xl font-semibold tracking-tight ${pnlColor}`}>
-              {calculated ? `USD ${fmt(calculated.results.pnl, 0)}` : "-"}
-            </div>
-          </div>
-        </div>
+  {/* TCE */}
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      TCE
+    </div>
+    <div className="mt-1 text-xs text-slate-400">USD / Day</div>
+    <div className="text-4xl font-semibold tracking-tight text-white">
+      {calculated ? fmt(calculated.results.tce, 0) : "-"}
+    </div>
+  </div>
 
+  {/* PNL */}
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      PNL
+    </div>
+    <div className="mt-1 text-xs text-slate-400">USD</div>
+    <div className={`text-4xl font-semibold tracking-tight ${pnlColor}`}>
+      {calculated ? fmt(calculated.results.pnl, 0) : "-"}
+    </div>
+  </div>
+
+</div>
         <div className="grid grid-cols-1 gap-6">
           <div className={card}>
             <div className="mb-4 flex items-center justify-between">
