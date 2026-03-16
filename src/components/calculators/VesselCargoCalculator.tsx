@@ -358,7 +358,7 @@ const btnGhost =
   if (err) {
     return (
       <div className={page}>
-        <div className={shell}> ref={reportRef}>
+        <div className={shell}>
           <div className={card}>
             <div className={title}>Couldn’t load backend data</div>
             <div className="mt-2 text-sm text-rose-300">{err}</div>
@@ -372,7 +372,7 @@ const btnGhost =
 
   return (
     <div className={page}>
-      <div className={shell}>
+      <div className={shell}> ref={reportRef}>
         <div className="mb-6">
           <div className={title}>Cargo Freight Calculator</div>
           <div className={sub}>Route & Freight Analysis</div>
