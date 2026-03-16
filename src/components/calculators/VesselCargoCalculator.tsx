@@ -478,6 +478,65 @@ export default function VesselCargoCalculator() {
   </div>
 
 </div>
+
+        {/* Voyage Summary */}
+<div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      Ballast Days
+    </div>
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+      {calculated ? fmt(calculated.days.ballastDays, 2) : "-"}
+    </div>
+    <div className="mt-1 text-xs text-slate-400">Days</div>
+  </div>
+
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      Laden Days
+    </div>
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+      {calculated ? fmt(calculated.days.ladenDays, 2) : "-"}
+    </div>
+    <div className="mt-1 text-xs text-slate-400">Days</div>
+  </div>
+
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      Port Days
+    </div>
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+      {calculated
+        ? fmt(
+            calculated.days.loadingDays +
+              calculated.days.dischargingDays +
+              calculated.days.waitingDays,
+            2
+          )
+        : "-"}
+    </div>
+    <div className="mt-1 text-xs text-slate-400">Days</div>
+  </div>
+
+  <div className={card}>
+    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+      Total Bunker
+    </div>
+    <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+      {calculated
+        ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2)
+        : "-"}
+    </div>
+    <div className="mt-1 text-xs text-slate-400">
+      MT
+      {calculated && (
+        <span className="ml-2 text-slate-500">
+          VLSFO {fmt(calculated.bunkers.totalVlsfo, 2)} / MGO {fmt(calculated.bunkers.totalMgo, 2)}
+        </span>
+      )}
+    </div>
+  </div>
+</div>
         <div className="grid grid-cols-1 gap-6">
           <div className={card}>
             <div className="mb-4 flex items-center justify-between">
