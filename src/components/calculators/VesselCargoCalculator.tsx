@@ -117,42 +117,39 @@ async function captureScreenshot() {
       return;
     }
 
-    const canvas = await html2canvas(reportRef.current, {
+    const original = reportRef.current;
+
+    const clone = original.cloneNode(true) as HTMLElement;
+    clone.style.position = "fixed";
+    clone.style.left = "-99999px";
+    clone.style.top = "0";
+    clone.style.width = `${original.offsetWidth}px`;
+    clone.style.background = "#020817";
+    clone.style.color = "#f8fafc";
+    clone.style.padding = "16px";
+    clone.style.zIndex = "9999";
+
+    const all = clone.querySelectorAll("*");
+    all.forEach((node) => {
+      const htmlNode = node as HTMLElement;
+      htmlNode.style.boxShadow = "none";
+      htmlNode.style.backgroundColor = "#0f172a";
+      htmlNode.style.borderColor = "#334155";
+      htmlNode.style.color = "#e2e8f0";
+    });
+
+    document.body.appendChild(clone);
+
+    const canvas = await html2canvas(clone, {
       backgroundColor: "#020817",
       scale: 2,
       useCORS: true,
       logging: false,
-      onclone: (_doc, clonedElement) => {
-        const el = clonedElement as HTMLElement;
-
-        el.style.background = "#020817";
-        el.style.color = "#f8fafc";
-
-        const all = el.querySelectorAll("*");
-        all.forEach((node) => {
-          const htmlNode = node as HTMLElement;
-
-          htmlNode.style.boxShadow = "none";
-
-          const computed = window.getComputedStyle(htmlNode);
-
-          if (computed.backgroundColor.includes("oklch")) {
-            htmlNode.style.backgroundColor = "#0f172a";
-          }
-
-          if (computed.borderColor.includes("oklch")) {
-            htmlNode.style.borderColor = "#334155";
-          }
-
-          if (computed.color.includes("oklch")) {
-            htmlNode.style.color = "#e2e8f0";
-          }
-        });
-      },
     });
 
-    const image = canvas.toDataURL("image/png");
+    document.body.removeChild(clone);
 
+    const image = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = image;
     link.download = `voyage-report-${new Date().toISOString().slice(0, 10)}.png`;
