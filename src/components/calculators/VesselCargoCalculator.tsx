@@ -117,19 +117,48 @@ async function captureScreenshot() {
       return;
     }
 
-    const canvas = await html2canvas(reportRef.current, {
+    const original = reportRef.current;
+
+    const clone = original.cloneNode(true) as HTMLElement;
+    clone.style.position = "fixed";
+    clone.style.left = "-99999px";
+    clone.style.top = "0";
+    clone.style.width = `${original.offsetWidth}px`;
+    clone.style.background = "#020817";
+    clone.style.color = "#f8fafc";
+    clone.style.padding = "16px";
+    clone.style.zIndex = "9999";
+
+    const all = clone.querySelectorAll("*");
+    all.forEach((node) => {
+      const el = node as HTMLElement;
+      el.style.boxShadow = "none";
+
+      if (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") {
+        el.style.backgroundColor = "#020817";
+        el.style.borderColor = "#334155";
+        el.style.color = "#f8fafc";
+      } else {
+        el.style.backgroundColor = "#0f172a";
+        el.style.borderColor = "#334155";
+        el.style.color = "#e2e8f0";
+      }
+    });
+
+    document.body.appendChild(clone);
+
+    const canvas = await html2canvas(clone, {
       backgroundColor: "#020817",
       scale: 2,
       useCORS: true,
       logging: false,
       scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: document.documentElement.scrollWidth,
-      windowHeight: document.documentElement.scrollHeight,
+      scrollY: 0,
     });
 
-    const image = canvas.toDataURL("image/png");
+    document.body.removeChild(clone);
 
+    const image = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = image;
     link.download = `voyagepro-full-report-${new Date().toISOString().slice(0, 10)}.png`;
