@@ -126,7 +126,8 @@ async function captureScreenshot() {
     clone.style.width = `${original.offsetWidth}px`;
     clone.style.background = "#020817";
     clone.style.color = "#f8fafc";
-    clone.style.padding = "16px";
+    clone.style.padding = "40px 24px";
+    clone.style.borderRadius = "16px";
     clone.style.zIndex = "9999";
 
     const all = clone.querySelectorAll("*");
@@ -149,7 +150,7 @@ async function captureScreenshot() {
 
     const canvas = await html2canvas(clone, {
       backgroundColor: "#020817",
-      scale: 2,
+      scale: 3,
       useCORS: true,
       logging: false,
       scrollX: 0,
