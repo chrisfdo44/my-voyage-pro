@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { fetchBackendFromWebApp, type CargoRow, type VesselRow } from "../../lib/sheetsApi";
 import html2canvas from "html2canvas";
+import { fetchBackendFromWebApp, type CargoRow, type VesselRow } from "../../lib/sheetsApi";
 
 type GreyEditable = {
   dwt: number;
@@ -108,35 +108,36 @@ export default function VesselCargoCalculator() {
   });
 
   const [calculated, setCalculated] = useState<any | null>(null);
-const exportRef = useRef<HTMLDivElement | null>(null);
-  
-async function captureScreenshot() {
-  try {
-    if (!exportRef.current) {
-      alert("Export section not found");
-      return;
+  const exportRef = useRef<HTMLDivElement | null>(null);
+
+  async function captureScreenshot() {
+    try {
+      if (!exportRef.current) {
+        alert("Export section not found");
+        return;
+      }
+
+      const canvas = await html2canvas(exportRef.current, {
+        backgroundColor: "#020817",
+        scale: 3,
+        useCORS: true,
+        logging: false,
+      });
+
+      const image = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = `voyagepro-report-${new Date().toISOString().slice(0, 10)}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Screenshot error:", error);
+      alert("Screenshot failed. Check browser console.");
     }
-
-    const canvas = await html2canvas(exportRef.current, {
-      backgroundColor: "#020817",
-      scale: 3,
-      useCORS: true,
-      logging: false,
-    });
-
-    const image = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = image;
-    link.download = `voyagepro-report-${new Date().toISOString().slice(0, 10)}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error("Screenshot error:", error);
-    alert("Screenshot failed. Check browser console.");
   }
-}
-useEffect(() => {
+
+  useEffect(() => {
     let mounted = true;
 
     (async () => {
@@ -243,7 +244,6 @@ useEffect(() => {
 
     const loadableQtyByVessel = intakeQty - n(grey.vslConstant);
     const cargoQtyMax = n(grey.quantity) * (1 + n(grey.tolerance));
-
     const loadableQty = Math.min(loadableQtyByVessel, cargoQtyMax);
     const H1 = loadableQty;
 
@@ -273,12 +273,10 @@ useEffect(() => {
     const waitingVlsfo = waitingDays * n(grey.idleVlsfo);
     const waitingMgo = waitingDays * n(grey.idleMgo);
 
-    const totalDays =
-      ballastDays + ladenDays + loadingDays + dischargingDays + waitingDays;
+    const totalDays = ballastDays + ladenDays + loadingDays + dischargingDays + waitingDays;
     const totalVlsfo =
       ballastVlsfo + ladenVlsfo + loadingVlsfo + dischargingVlsfo + waitingVlsfo;
-    const totalMgo =
-      ballastMgo + ladenMgo + loadingMgo + dischargingMgo + waitingMgo;
+    const totalMgo = ballastMgo + ladenMgo + loadingMgo + dischargingMgo + waitingMgo;
 
     const bunkerCostVlsfo = totalVlsfo * n(green.vlsfoPrice);
     const bunkerCostMgo = totalMgo * n(green.mgoPrice);
@@ -317,21 +315,21 @@ useEffect(() => {
     calculate();
   }, [grey, green]);
 
-const page = "min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100";
-const shell = "mx-auto max-w-screen-xl px-4 py-6";
-const card =
-  "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60";
-const title = "text-2xl font-bold tracking-tight text-slate-900 dark:text-white";
-const sub = "text-xs uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400/80";
-const sectionTitle = "text-lg font-semibold tracking-wide text-slate-900 dark:text-white";
-const label =
-  "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300";
-const input =
-  "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
-const btnPrimary =
-  "rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400";
-const btnGhost =
-  "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 hover:border-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:border-cyan-400";
+  const page = "min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100";
+  const shell = "mx-auto max-w-screen-xl px-4 py-6";
+  const card =
+    "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60";
+  const title = "text-2xl font-bold tracking-tight text-slate-900 dark:text-white";
+  const sub = "text-xs uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400/80";
+  const sectionTitle = "text-lg font-semibold tracking-wide text-slate-900 dark:text-white";
+  const label =
+    "mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300";
+  const input =
+    "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
+  const btnPrimary =
+    "rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400";
+  const btnGhost =
+    "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 hover:border-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:border-cyan-400";
 
   const pnlValue = calculated?.results?.pnl ?? 0;
   const pnlColor =
@@ -367,7 +365,7 @@ const btnGhost =
 
   return (
     <div className={page}>
-      <div className={shell} ref={reportRef}>
+      <div className={shell}>
         <div className="mb-6">
           <div className={title}>Cargo Freight Calculator</div>
           <div className={sub}>Route & Freight Analysis</div>
@@ -416,11 +414,12 @@ const btnGhost =
                 Reset Backend Values
               </button>
             </div>
+
             <div className="flex items-end">
-  <button className={`${btnGhost} w-full`} onClick={captureScreenshot} type="button">
-    Capture Screenshot
-  </button>
-</div>
+              <button className={`${btnGhost} w-full`} onClick={captureScreenshot} type="button">
+                Capture Screenshot
+              </button>
+            </div>
           </div>
         </div>
 
@@ -454,124 +453,116 @@ const btnGhost =
           </div>
         </div>
 
-        {/* Result Cards */}
-<div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              Loadable Qty
+            </div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated ? fmt(calculated.intake.loadableQty, 0) : "-"}
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">MT</div>
+          </div>
 
-  {/* Loadable Qty */}
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      Loadable Qty
-    </div>
-    <div className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated ? fmt(calculated.intake.loadableQty, 0) : "-"}
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">MT</div>
-  </div>
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              Total Days
+            </div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated ? fmt(calculated.days.totalDays, 2) : "-"}
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
+          </div>
 
-  {/* Total Days */}
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      Total Days
-    </div>
-    <div className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated ? fmt(calculated.days.totalDays, 2) : "-"}
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
-  </div>
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              Freight
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD</div>
+            <div className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated ? fmt(calculated.results.freight, 2) : "-"}
+            </div>
+          </div>
 
-  {/* Freight */}
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      Freight
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD</div>
-    <div className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated ? fmt(calculated.results.freight, 2) : "-"}
-    </div>
-  </div>
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              TCE
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD / Day</div>
+            <div className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated ? fmt(calculated.results.tce, 0) : "-"}
+            </div>
+          </div>
 
-  {/* TCE */}
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      TCE
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD / Day</div>
-    <div className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated ? fmt(calculated.results.tce, 0) : "-"}
-    </div>
-  </div>
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              PNL
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD</div>
+            <div className={`text-4xl font-semibold tracking-tight ${pnlColor}`}>
+              {calculated ? fmt(calculated.results.pnl, 0) : "-"}
+            </div>
+          </div>
+        </div>
 
-  {/* PNL */}
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      PNL
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">USD</div>
-    <div className={`text-4xl font-semibold tracking-tight ${pnlColor}`}>
-      {calculated ? fmt(calculated.results.pnl, 0) : "-"}
-    </div>
-  </div>
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              Ballast Days
+            </div>
+            <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated ? fmt(calculated.days.ballastDays, 2) : "-"}
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
+          </div>
 
-</div>
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              Laden Days
+            </div>
+            <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated ? fmt(calculated.days.ladenDays, 2) : "-"}
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
+          </div>
 
-        {/* Voyage Summary */}
-<div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      Ballast Days
-    </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated ? fmt(calculated.days.ballastDays, 2) : "-"}
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
-  </div>
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              Port Days
+            </div>
+            <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated
+                ? fmt(
+                    calculated.days.loadingDays +
+                      calculated.days.dischargingDays +
+                      calculated.days.waitingDays,
+                    2
+                  )
+                : "-"}
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
+          </div>
 
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      Laden Days
-    </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated ? fmt(calculated.days.ladenDays, 2) : "-"}
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
-  </div>
+          <div className={card}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
+              Total Bunker
+            </div>
+            <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {calculated
+                ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2)
+                : "-"}
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              MT
+              {calculated && (
+                <span className="ml-2 text-slate-500">
+                  VLSFO {fmt(calculated.bunkers.totalVlsfo, 2)} / MGO {fmt(calculated.bunkers.totalMgo, 2)}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
 
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      Port Days
-    </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated
-        ? fmt(
-            calculated.days.loadingDays +
-              calculated.days.dischargingDays +
-              calculated.days.waitingDays,
-            2
-          )
-        : "-"}
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Days</div>
-  </div>
-
-  <div className={card}>
-    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
-      Total Bunker
-    </div>
-    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-      {calculated
-        ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2)
-        : "-"}
-    </div>
-    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-      MT
-      {calculated && (
-        <span className="ml-2 text-slate-500">
-          VLSFO {fmt(calculated.bunkers.totalVlsfo, 2)} / MGO {fmt(calculated.bunkers.totalMgo, 2)}
-        </span>
-      )}
-    </div>
-</div>
-  </div>
         <div className="grid grid-cols-1 gap-6">
           <div className={card}>
             <div className="mb-4 flex items-center justify-between">
@@ -847,159 +838,265 @@ const btnGhost =
             </div>
           </div>
         </div>
-      </div>
-      <div
-  
-  style={{
-    position: "fixed",
-    left: "-99999px",
-    top: 0,
-    width: "1400px",
-    background: "#020817",
-    color: "#e2e8f0",
-    padding: "48px 32px",
-    boxSizing: "border-box",
-  }}
->
-  <div
-    ref={exportRef}
-    style={{
-      background: "#020817",
-      color: "#e2e8f0",
-      fontFamily: "Arial, sans-serif",
-    }}
-  >
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ fontSize: "44px", fontWeight: 700, color: "#ffffff" }}>
-        Cargo Freight Calculator
-      </div>
-      <div style={{ fontSize: "14px", letterSpacing: "0.2em", color: "#22d3ee", marginTop: "8px" }}>
-        ROUTE & FREIGHT ANALYSIS
-      </div>
-    </div>
 
-    <div
-      style={{
-        border: "1px solid #334155",
-        borderRadius: "18px",
-        background: "#0f172a",
-        padding: "24px",
-        marginBottom: "20px",
-      }}
-    >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
-        <div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>VESSEL NAME</div>
-          <div style={{ fontSize: "30px", color: "#fff", marginTop: "8px" }}>{selectedVessel}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>ACCOUNT NAME</div>
-          <div style={{ fontSize: "30px", color: "#fff", marginTop: "8px" }}>{selectedAccount}</div>
-        </div>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
-        <div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>VLSFO PRICE</div>
-          <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>{green.vlsfoPrice}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>MGO PRICE</div>
-          <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>{green.mgoPrice}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>HIRE</div>
-          <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>{green.hire}</div>
-        </div>
-      </div>
-    </div>
-
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "18px", marginBottom: "20px" }}>
-      {[
-        ["Loadable Qty", calculated ? fmt(calculated.intake.loadableQty, 0) : "-", "MT", "#ffffff"],
-        ["Total Days", calculated ? fmt(calculated.days.totalDays, 2) : "-", "Days", "#ffffff"],
-        ["Freight", calculated ? fmt(calculated.results.freight, 2) : "-", "USD/MT", "#ffffff"],
-        ["TCE", calculated ? fmt(calculated.results.tce, 0) : "-", "USD / Day", "#ffffff"],
-        ["PNL", calculated ? fmt(calculated.results.pnl, 0) : "-", "USD", pnlValue > 0 ? "#34d399" : pnlValue < 0 ? "#fb7185" : "#ffffff"],
-      ].map(([labelText, value, unit, valueColor]) => (
         <div
-          key={labelText}
           style={{
-            border: "1px solid #334155",
-            borderRadius: "18px",
-            background: "#0f172a",
-            padding: "22px",
+            position: "fixed",
+            left: "-99999px",
+            top: 0,
+            width: "1400px",
+            background: "#020817",
+            color: "#e2e8f0",
+            padding: "48px 32px",
+            boxSizing: "border-box",
           }}
         >
-          <div style={{ fontSize: "12px", color: "#22d3ee", letterSpacing: "0.16em", textTransform: "uppercase" }}>
-            {labelText}
-          </div>
-          <div style={{ fontSize: "30px", fontWeight: 700, color: valueColor as string, marginTop: "18px" }}>
-            {value}
-          </div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>{unit}</div>
-        </div>
-      ))}
-    </div>
-
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "18px", marginBottom: "20px" }}>
-      {[
-        ["Ballast Days", calculated ? fmt(calculated.days.ballastDays, 2) : "-", "Days"],
-        ["Laden Days", calculated ? fmt(calculated.days.ladenDays, 2) : "-", "Days"],
-        ["Port Days", calculated ? fmt(calculated.days.loadingDays + calculated.days.dischargingDays + calculated.days.waitingDays, 2) : "-", "Days"],
-        ["Total Bunker", calculated ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2) : "-", `MT  VLSFO ${calculated ? fmt(calculated.bunkers.totalVlsfo, 2) : "-"} / MGO ${calculated ? fmt(calculated.bunkers.totalMgo, 2) : "-"}`],
-      ].map(([labelText, value, unit]) => (
-        <div
-          key={labelText}
-          style={{
-            border: "1px solid #334155",
-            borderRadius: "18px",
-            background: "#0f172a",
-            padding: "22px",
-          }}
-        >
-          <div style={{ fontSize: "12px", color: "#22d3ee", letterSpacing: "0.16em", textTransform: "uppercase" }}>
-            {labelText}
-          </div>
-          <div style={{ fontSize: "30px", fontWeight: 700, color: "#fff", marginTop: "18px" }}>
-            {value}
-          </div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>{unit}</div>
-        </div>
-      ))}
-    </div>
-
-    <div
-      style={{
-        border: "1px solid #334155",
-        borderRadius: "18px",
-        background: "#0f172a",
-        padding: "24px",
-      }}
-    >
-      <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "16px" }}>Cargo Details</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
-        {[
-          ["Cargo", grey.cargo],
-          ["Quantity", grey.quantity],
-          ["Tolerance", `${percentDisplay(grey.tolerance)}%`],
-          ["Load Port", grey.loadPort],
-          ["Discharge Port", grey.dischargePort],
-          ["Ballast Distance", grey.ballastDistance],
-          ["Laden Distance", grey.ladenDistance],
-          ["Remarks", grey.parameters || "-"],
-        ].map(([labelText, value]) => (
-          <div key={labelText}>
-            <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em", textTransform: "uppercase" }}>
-              {labelText}
+          <div
+            ref={exportRef}
+            style={{
+              background: "#020817",
+              color: "#e2e8f0",
+              fontFamily: "Arial, sans-serif",
+            }}
+          >
+            <div style={{ marginBottom: "28px" }}>
+              <div style={{ fontSize: "44px", fontWeight: 700, color: "#ffffff" }}>
+                Cargo Freight Calculator
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                  letterSpacing: "0.2em",
+                  color: "#22d3ee",
+                  marginTop: "8px",
+                }}
+              >
+                ROUTE & FREIGHT ANALYSIS
+              </div>
             </div>
-            <div style={{ fontSize: "20px", color: "#fff", marginTop: "8px" }}>{String(value)}</div>
+
+            <div
+              style={{
+                border: "1px solid #334155",
+                borderRadius: "18px",
+                background: "#0f172a",
+                padding: "24px",
+                marginBottom: "20px",
+              }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "20px",
+                  marginBottom: "20px",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>
+                    VESSEL NAME
+                  </div>
+                  <div style={{ fontSize: "30px", color: "#fff", marginTop: "8px" }}>
+                    {selectedVessel}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>
+                    ACCOUNT NAME
+                  </div>
+                  <div style={{ fontSize: "30px", color: "#fff", marginTop: "8px" }}>
+                    {selectedAccount}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+                <div>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>
+                    VLSFO PRICE
+                  </div>
+                  <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>
+                    {green.vlsfoPrice}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>
+                    MGO PRICE
+                  </div>
+                  <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>
+                    {green.mgoPrice}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>
+                    HIRE
+                  </div>
+                  <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>
+                    {green.hire}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(5, 1fr)",
+                gap: "18px",
+                marginBottom: "20px",
+              }}
+            >
+              {[
+                ["Loadable Qty", calculated ? fmt(calculated.intake.loadableQty, 0) : "-", "MT", "#ffffff"],
+                ["Total Days", calculated ? fmt(calculated.days.totalDays, 2) : "-", "Days", "#ffffff"],
+                ["Freight", calculated ? fmt(calculated.results.freight, 2) : "-", "USD/MT", "#ffffff"],
+                ["TCE", calculated ? fmt(calculated.results.tce, 0) : "-", "USD / Day", "#ffffff"],
+                [
+                  "PNL",
+                  calculated ? fmt(calculated.results.pnl, 0) : "-",
+                  "USD",
+                  pnlValue > 0 ? "#34d399" : pnlValue < 0 ? "#fb7185" : "#ffffff",
+                ],
+              ].map(([labelText, value, unit, valueColor]) => (
+                <div
+                  key={String(labelText)}
+                  style={{
+                    border: "1px solid #334155",
+                    borderRadius: "18px",
+                    background: "#0f172a",
+                    padding: "22px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#22d3ee",
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {labelText}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "30px",
+                      fontWeight: 700,
+                      color: String(valueColor),
+                      marginTop: "18px",
+                    }}
+                  >
+                    {String(value)}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>
+                    {String(unit)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: "18px",
+                marginBottom: "20px",
+              }}
+            >
+              {[
+                ["Ballast Days", calculated ? fmt(calculated.days.ballastDays, 2) : "-", "Days"],
+                ["Laden Days", calculated ? fmt(calculated.days.ladenDays, 2) : "-", "Days"],
+                [
+                  "Port Days",
+                  calculated
+                    ? fmt(
+                        calculated.days.loadingDays +
+                          calculated.days.dischargingDays +
+                          calculated.days.waitingDays,
+                        2
+                      )
+                    : "-",
+                  "Days",
+                ],
+                [
+                  "Total Bunker",
+                  calculated ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2) : "-",
+                  `MT  VLSFO ${calculated ? fmt(calculated.bunkers.totalVlsfo, 2) : "-"} / MGO ${
+                    calculated ? fmt(calculated.bunkers.totalMgo, 2) : "-"
+                  }`,
+                ],
+              ].map(([labelText, value, unit]) => (
+                <div
+                  key={String(labelText)}
+                  style={{
+                    border: "1px solid #334155",
+                    borderRadius: "18px",
+                    background: "#0f172a",
+                    padding: "22px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#22d3ee",
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {labelText}
+                  </div>
+                  <div style={{ fontSize: "30px", fontWeight: 700, color: "#fff", marginTop: "18px" }}>
+                    {String(value)}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>
+                    {String(unit)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                border: "1px solid #334155",
+                borderRadius: "18px",
+                background: "#0f172a",
+                padding: "24px",
+              }}
+            >
+              <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "16px" }}>
+                Cargo Details
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+                {[
+                  ["Cargo", grey.cargo],
+                  ["Quantity", grey.quantity],
+                  ["Tolerance", `${percentDisplay(grey.tolerance)}%`],
+                  ["Load Port", grey.loadPort],
+                  ["Discharge Port", grey.dischargePort],
+                  ["Ballast Distance", grey.ballastDistance],
+                  ["Laden Distance", grey.ladenDistance],
+                  ["Remarks", grey.parameters || "-"],
+                ].map(([labelText, value]) => (
+                  <div key={String(labelText)}>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#94a3b8",
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {labelText}
+                    </div>
+                    <div style={{ fontSize: "20px", color: "#fff", marginTop: "8px" }}>
+                      {String(value)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        ))}
+        </div>
       </div>
-    </div>
-  </div>
-</div>
     </div>
   );
 }
