@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import html2canvas from "html2canvas";
 import { fetchBackendFromWebApp, type CargoRow, type VesselRow } from "../../lib/sheetsApi";
 
 type GreyEditable = {
@@ -108,35 +107,7 @@ export default function VesselCargoCalculator() {
   });
 
   const [calculated, setCalculated] = useState<any | null>(null);
-  const exportRef = useRef<HTMLDivElement | null>(null);
-
-  async function captureScreenshot() {
-    try {
-      if (!exportRef.current) {
-        alert("Export section not found");
-        return;
-      }
-
-      const canvas = await html2canvas(exportRef.current, {
-        backgroundColor: "#020817",
-        scale: 3,
-        useCORS: true,
-        logging: false,
-      });
-
-      const image = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = `voyagepro-report-${new Date().toISOString().slice(0, 10)}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Screenshot error:", error);
-      alert("Screenshot failed. Check browser console.");
-    }
-  }
-
+ 
   useEffect(() => {
     let mounted = true;
 
@@ -412,12 +383,6 @@ export default function VesselCargoCalculator() {
             <div className="flex items-end">
               <button className={`${btnGhost} w-full`} onClick={resetGreyToBackend} type="button">
                 Reset Backend Values
-              </button>
-            </div>
-
-            <div className="flex items-end">
-              <button className={`${btnGhost} w-full`} onClick={captureScreenshot} type="button">
-                Capture Screenshot
               </button>
             </div>
           </div>
@@ -937,166 +902,6 @@ export default function VesselCargoCalculator() {
                 </div>
               </div>
             </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(5, 1fr)",
-                gap: "18px",
-                marginBottom: "20px",
-              }}
-            >
-              {[
-                ["Loadable Qty", calculated ? fmt(calculated.intake.loadableQty, 0) : "-", "MT", "#ffffff"],
-                ["Total Days", calculated ? fmt(calculated.days.totalDays, 2) : "-", "Days", "#ffffff"],
-                ["Freight", calculated ? fmt(calculated.results.freight, 2) : "-", "USD/MT", "#ffffff"],
-                ["TCE", calculated ? fmt(calculated.results.tce, 0) : "-", "USD / Day", "#ffffff"],
-                [
-                  "PNL",
-                  calculated ? fmt(calculated.results.pnl, 0) : "-",
-                  "USD",
-                  pnlValue > 0 ? "#34d399" : pnlValue < 0 ? "#fb7185" : "#ffffff",
-                ],
-              ].map(([labelText, value, unit, valueColor]) => (
-                <div
-                  key={String(labelText)}
-                  style={{
-                    border: "1px solid #334155",
-                    borderRadius: "18px",
-                    background: "#0f172a",
-                    padding: "22px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "#22d3ee",
-                      letterSpacing: "0.16em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {labelText}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "30px",
-                      fontWeight: 700,
-                      color: String(valueColor),
-                      marginTop: "18px",
-                    }}
-                  >
-                    {String(value)}
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>
-                    {String(unit)}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "18px",
-                marginBottom: "20px",
-              }}
-            >
-              {[
-                ["Ballast Days", calculated ? fmt(calculated.days.ballastDays, 2) : "-", "Days"],
-                ["Laden Days", calculated ? fmt(calculated.days.ladenDays, 2) : "-", "Days"],
-                [
-                  "Port Days",
-                  calculated
-                    ? fmt(
-                        calculated.days.loadingDays +
-                          calculated.days.dischargingDays +
-                          calculated.days.waitingDays,
-                        2
-                      )
-                    : "-",
-                  "Days",
-                ],
-                [
-                  "Total Bunker",
-                  calculated ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2) : "-",
-                  `MT  VLSFO ${calculated ? fmt(calculated.bunkers.totalVlsfo, 2) : "-"} / MGO ${
-                    calculated ? fmt(calculated.bunkers.totalMgo, 2) : "-"
-                  }`,
-                ],
-              ].map(([labelText, value, unit]) => (
-                <div
-                  key={String(labelText)}
-                  style={{
-                    border: "1px solid #334155",
-                    borderRadius: "18px",
-                    background: "#0f172a",
-                    padding: "22px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "#22d3ee",
-                      letterSpacing: "0.16em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {labelText}
-                  </div>
-                  <div style={{ fontSize: "30px", fontWeight: 700, color: "#fff", marginTop: "18px" }}>
-                    {String(value)}
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>
-                    {String(unit)}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div
-              style={{
-                border: "1px solid #334155",
-                borderRadius: "18px",
-                background: "#0f172a",
-                padding: "24px",
-              }}
-            >
-              <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "16px" }}>
-                Cargo Details
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
-                {[
-                  ["Cargo", grey.cargo],
-                  ["Quantity", grey.quantity],
-                  ["Tolerance", `${percentDisplay(grey.tolerance)}%`],
-                  ["Load Port", grey.loadPort],
-                  ["Discharge Port", grey.dischargePort],
-                  ["Ballast Distance", grey.ballastDistance],
-                  ["Laden Distance", grey.ladenDistance],
-                  ["Remarks", grey.parameters || "-"],
-                ].map(([labelText, value]) => (
-                  <div key={String(labelText)}>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#94a3b8",
-                        letterSpacing: "0.14em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {labelText}
-                    </div>
-                    <div style={{ fontSize: "20px", color: "#fff", marginTop: "8px" }}>
-                      {String(value)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
