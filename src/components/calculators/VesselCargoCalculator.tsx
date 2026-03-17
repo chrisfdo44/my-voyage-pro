@@ -849,7 +849,7 @@ const btnGhost =
         </div>
       </div>
       <div
-  <div
+  
   style={{
     position: "fixed",
     left: "-99999px",
