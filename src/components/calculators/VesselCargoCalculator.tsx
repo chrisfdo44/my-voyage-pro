@@ -113,22 +113,106 @@ const exportRef = useRef<HTMLDivElement | null>(null);
   
 async function captureScreenshot() {
   try {
-    if (!exportRef.current) {
-      alert("Export section not found");
+    if (!reportRef.current) {
+      alert("Report section not found");
       return;
     }
 
-    const canvas = await html2canvas(exportRef.current, {
+    const original = reportRef.current;
+
+    // Clone the UI
+    const clone = original.cloneNode(true) as HTMLElement;
+
+    // Move off screen
+    clone.style.position = "fixed";
+    clone.style.left = "-99999px";
+    clone.style.top = "0";
+    clone.style.width = `${original.offsetWidth}px`;
+    clone.style.background = "#020817";
+    clone.style.padding = "40px";
+    clone.style.zIndex = "9999";
+
+    // --- FIX 1: Replace SELECT with text ---
+    const originalSelects = original.querySelectorAll("select");
+    const clonedSelects = clone.querySelectorAll("select");
+
+    originalSelects.forEach((select, i) => {
+      const selectedText =
+        (select as HTMLSelectElement).options[
+          (select as HTMLSelectElement).selectedIndex
+        ]?.text || "";
+
+      const span = document.createElement("span");
+      span.innerText = selectedText;
+      span.style.color = "#ffffff";
+      span.style.fontSize = "14px";
+
+      clonedSelects[i]?.parentNode?.replaceChild(span, clonedSelects[i]);
+    });
+
+    // --- FIX 2: Replace INPUT with text ---
+    const originalInputs = original.querySelectorAll("input");
+    const clonedInputs = clone.querySelectorAll("input");
+
+    originalInputs.forEach((input, i) => {
+      const value = (input as HTMLInputElement).value;
+
+      const span = document.createElement("span");
+      span.innerText = value;
+      span.style.color = "#ffffff";
+      span.style.fontSize = "14px";
+
+      clonedInputs[i]?.parentNode?.replaceChild(span, clonedInputs[i]);
+    });
+
+    // --- FIX 3: Remove buttons ---
+    const buttons = clone.querySelectorAll("button");
+    buttons.forEach((btn) => {
+      (btn as HTMLElement).style.display = "none";
+    });
+
+    // --- FIX 4: Force safe colors (avoid oklch error) ---
+    const all = clone.querySelectorAll("*");
+    all.forEach((el) => {
+      const element = el as HTMLElement;
+
+      element.style.boxShadow = "none";
+
+      // Force safe background & text
+      if (
+        element.tagName !== "SPAN" &&
+        element.tagName !== "P" &&
+        element.tagName !== "DIV"
+      ) {
+        element.style.backgroundColor = "#020817";
+      }
+
+      element.style.color = "#e2e8f0";
+      element.style.borderColor = "#334155";
+    });
+
+    document.body.appendChild(clone);
+
+    // --- Capture ---
+    const canvas = await html2canvas(clone, {
       backgroundColor: "#020817",
       scale: 3,
       useCORS: true,
       logging: false,
+      scrollX: 0,
+      scrollY: 0,
     });
 
+    document.body.removeChild(clone);
+
+    // --- Download ---
     const image = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = image;
-    link.download = `voyagepro-report-${new Date().toISOString().slice(0, 10)}.png`;
+    link.download = `voyagepro-report-${new Date()
+      .toISOString()
+      .slice(0, 10)}.png`;
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -137,7 +221,6 @@ async function captureScreenshot() {
     alert("Screenshot failed. Check browser console.");
   }
 }
-
 useEffect(() => {
     let mounted = true;
 
