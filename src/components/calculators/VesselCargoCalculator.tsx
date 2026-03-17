@@ -108,111 +108,26 @@ export default function VesselCargoCalculator() {
   });
 
   const [calculated, setCalculated] = useState<any | null>(null);
-const reportRef = useRef<HTMLDivElement | null>(null);
 const exportRef = useRef<HTMLDivElement | null>(null);
   
 async function captureScreenshot() {
   try {
-    if (!reportRef.current) {
-      alert("Report section not found");
+    if (!exportRef.current) {
+      alert("Export section not found");
       return;
     }
 
-    const original = reportRef.current;
-
-    // Clone the UI
-    const clone = original.cloneNode(true) as HTMLElement;
-
-    // Move off screen
-    clone.style.position = "fixed";
-    clone.style.left = "-99999px";
-    clone.style.top = "0";
-    clone.style.width = `${original.offsetWidth}px`;
-    clone.style.background = "#020817";
-    clone.style.padding = "40px";
-    clone.style.zIndex = "9999";
-
-    // --- FIX 1: Replace SELECT with text ---
-    const originalSelects = original.querySelectorAll("select");
-    const clonedSelects = clone.querySelectorAll("select");
-
-    originalSelects.forEach((select, i) => {
-      const selectedText =
-        (select as HTMLSelectElement).options[
-          (select as HTMLSelectElement).selectedIndex
-        ]?.text || "";
-
-      const span = document.createElement("span");
-      span.innerText = selectedText;
-      span.style.color = "#ffffff";
-      span.style.fontSize = "14px";
-
-      clonedSelects[i]?.parentNode?.replaceChild(span, clonedSelects[i]);
-    });
-
-    // --- FIX 2: Replace INPUT with text ---
-    const originalInputs = original.querySelectorAll("input");
-    const clonedInputs = clone.querySelectorAll("input");
-
-    originalInputs.forEach((input, i) => {
-      const value = (input as HTMLInputElement).value;
-
-      const span = document.createElement("span");
-      span.innerText = value;
-      span.style.color = "#ffffff";
-      span.style.fontSize = "14px";
-
-      clonedInputs[i]?.parentNode?.replaceChild(span, clonedInputs[i]);
-    });
-
-    // --- FIX 3: Remove buttons ---
-    const buttons = clone.querySelectorAll("button");
-    buttons.forEach((btn) => {
-      (btn as HTMLElement).style.display = "none";
-    });
-
-    // --- FIX 4: Force safe colors (avoid oklch error) ---
-    const all = clone.querySelectorAll("*");
-    all.forEach((el) => {
-      const element = el as HTMLElement;
-
-      element.style.boxShadow = "none";
-
-      // Force safe background & text
-      if (
-        element.tagName !== "SPAN" &&
-        element.tagName !== "P" &&
-        element.tagName !== "DIV"
-      ) {
-        element.style.backgroundColor = "#020817";
-      }
-
-      element.style.color = "#e2e8f0";
-      element.style.borderColor = "#334155";
-    });
-
-    document.body.appendChild(clone);
-
-    // --- Capture ---
-    const canvas = await html2canvas(clone, {
+    const canvas = await html2canvas(exportRef.current, {
       backgroundColor: "#020817",
       scale: 3,
       useCORS: true,
       logging: false,
-      scrollX: 0,
-      scrollY: 0,
     });
 
-    document.body.removeChild(clone);
-
-    // --- Download ---
     const image = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = image;
-    link.download = `voyagepro-report-${new Date()
-      .toISOString()
-      .slice(0, 10)}.png`;
-
+    link.download = `voyagepro-report-${new Date().toISOString().slice(0, 10)}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -934,6 +849,7 @@ const btnGhost =
         </div>
       </div>
       <div
+  <div
   style={{
     position: "fixed",
     left: "-99999px",
@@ -941,7 +857,7 @@ const btnGhost =
     width: "1400px",
     background: "#020817",
     color: "#e2e8f0",
-    padding: "40px",
+    padding: "48px 32px",
     boxSizing: "border-box",
   }}
 >
@@ -953,11 +869,11 @@ const btnGhost =
       fontFamily: "Arial, sans-serif",
     }}
   >
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "42px", fontWeight: 700, color: "#ffffff" }}>
+    <div style={{ marginBottom: "28px" }}>
+      <div style={{ fontSize: "44px", fontWeight: 700, color: "#ffffff" }}>
         Cargo Freight Calculator
       </div>
-      <div style={{ fontSize: "14px", letterSpacing: "0.2em", color: "#22d3ee", marginTop: "6px" }}>
+      <div style={{ fontSize: "14px", letterSpacing: "0.2em", color: "#22d3ee", marginTop: "8px" }}>
         ROUTE & FREIGHT ANALYSIS
       </div>
     </div>
@@ -971,18 +887,18 @@ const btnGhost =
         marginBottom: "20px",
       }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px", marginBottom: "18px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
         <div>
           <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>VESSEL NAME</div>
-          <div style={{ fontSize: "28px", color: "#fff", marginTop: "8px" }}>{selectedVessel}</div>
+          <div style={{ fontSize: "30px", color: "#fff", marginTop: "8px" }}>{selectedVessel}</div>
         </div>
         <div>
           <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>ACCOUNT NAME</div>
-          <div style={{ fontSize: "28px", color: "#fff", marginTop: "8px" }}>{selectedAccount}</div>
+          <div style={{ fontSize: "30px", color: "#fff", marginTop: "8px" }}>{selectedAccount}</div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "18px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
         <div>
           <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>VLSFO PRICE</div>
           <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>{green.vlsfoPrice}</div>
@@ -1002,7 +918,7 @@ const btnGhost =
       {[
         ["Loadable Qty", calculated ? fmt(calculated.intake.loadableQty, 0) : "-", "MT", "#ffffff"],
         ["Total Days", calculated ? fmt(calculated.days.totalDays, 2) : "-", "Days", "#ffffff"],
-        ["Freight", calculated ? fmt(calculated.results.freight, 2) : "-", "USD", "#ffffff"],
+        ["Freight", calculated ? fmt(calculated.results.freight, 2) : "-", "USD/MT", "#ffffff"],
         ["TCE", calculated ? fmt(calculated.results.tce, 0) : "-", "USD / Day", "#ffffff"],
         ["PNL", calculated ? fmt(calculated.results.pnl, 0) : "-", "USD", pnlValue > 0 ? "#34d399" : pnlValue < 0 ? "#fb7185" : "#ffffff"],
       ].map(([labelText, value, unit, valueColor]) => (
@@ -1031,7 +947,7 @@ const btnGhost =
         ["Ballast Days", calculated ? fmt(calculated.days.ballastDays, 2) : "-", "Days"],
         ["Laden Days", calculated ? fmt(calculated.days.ladenDays, 2) : "-", "Days"],
         ["Port Days", calculated ? fmt(calculated.days.loadingDays + calculated.days.dischargingDays + calculated.days.waitingDays, 2) : "-", "Days"],
-        ["Total Bunker", calculated ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2) : "-", "MT"],
+        ["Total Bunker", calculated ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2) : "-", `MT  VLSFO ${calculated ? fmt(calculated.bunkers.totalVlsfo, 2) : "-"} / MGO ${calculated ? fmt(calculated.bunkers.totalMgo, 2) : "-"}`],
       ].map(([labelText, value, unit]) => (
         <div
           key={labelText}
