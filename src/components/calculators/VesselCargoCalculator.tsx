@@ -126,14 +126,42 @@ async function captureScreenshot() {
     clone.style.width = `${original.offsetWidth}px`;
     clone.style.background = "#020817";
     clone.style.color = "#f8fafc";
-    clone.style.padding = "40px 24px";
-    clone.style.borderRadius = "16px";
+    clone.style.padding = "56px 28px 36px 28px";
     clone.style.zIndex = "9999";
+    clone.style.borderRadius = "20px";
+    clone.style.boxSizing = "border-box";
+
+    // --- VERY IMPORTANT: copy live values from original inputs/selects to clone ---
+    const originalFields = original.querySelectorAll("input, select, textarea");
+    const clonedFields = clone.querySelectorAll("input, select, textarea");
+
+    originalFields.forEach((field, index) => {
+      const originalEl = field as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+      const clonedEl = clonedFields[index] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+      if (!clonedEl) return;
+
+      clonedEl.value = originalEl.value;
+
+      if (clonedEl instanceof HTMLSelectElement && originalEl instanceof HTMLSelectElement) {
+        clonedEl.selectedIndex = originalEl.selectedIndex;
+      }
+
+      if (clonedEl instanceof HTMLInputElement && originalEl instanceof HTMLInputElement) {
+        clonedEl.checked = originalEl.checked;
+      }
+    });
 
     const all = clone.querySelectorAll("*");
     all.forEach((node) => {
       const el = node as HTMLElement;
       el.style.boxShadow = "none";
+      el.style.opacity = "1";
+
+      if (el.tagName === "BUTTON") {
+        el.style.display = "none";
+        return;
+      }
 
       if (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") {
         el.style.backgroundColor = "#020817";
@@ -171,7 +199,8 @@ async function captureScreenshot() {
     alert("Screenshot failed. Check browser console.");
   }
 }
-  useEffect(() => {
+
+useEffect(() => {
     let mounted = true;
 
     (async () => {
