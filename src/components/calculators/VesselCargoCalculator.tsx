@@ -109,88 +109,26 @@ export default function VesselCargoCalculator() {
 
   const [calculated, setCalculated] = useState<any | null>(null);
 const reportRef = useRef<HTMLDivElement | null>(null);
-
+const exportRef = useRef<HTMLDivElement | null>(null);
+  
 async function captureScreenshot() {
   try {
-    if (!reportRef.current) {
-      alert("Report section not found");
+    if (!exportRef.current) {
+      alert("Export section not found");
       return;
     }
 
-    const original = reportRef.current;
-
-    const clone = original.cloneNode(true) as HTMLElement;
-    clone.style.position = "fixed";
-    clone.style.left = "-99999px";
-    clone.style.top = "0";
-    clone.style.width = `${original.offsetWidth}px`;
-    clone.style.background = "#020817";
-    clone.style.color = "#f8fafc";
-    clone.style.padding = "56px 28px 36px 28px";
-    clone.style.zIndex = "9999";
-    clone.style.borderRadius = "20px";
-    clone.style.boxSizing = "border-box";
-
-    // --- VERY IMPORTANT: copy live values from original inputs/selects to clone ---
-    const originalFields = original.querySelectorAll("input, select, textarea");
-    const clonedFields = clone.querySelectorAll("input, select, textarea");
-
-    originalFields.forEach((field, index) => {
-      const originalEl = field as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-      const clonedEl = clonedFields[index] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-
-      if (!clonedEl) return;
-
-      clonedEl.value = originalEl.value;
-
-      if (clonedEl instanceof HTMLSelectElement && originalEl instanceof HTMLSelectElement) {
-        clonedEl.selectedIndex = originalEl.selectedIndex;
-      }
-
-      if (clonedEl instanceof HTMLInputElement && originalEl instanceof HTMLInputElement) {
-        clonedEl.checked = originalEl.checked;
-      }
-    });
-
-    const all = clone.querySelectorAll("*");
-    all.forEach((node) => {
-      const el = node as HTMLElement;
-      el.style.boxShadow = "none";
-      el.style.opacity = "1";
-
-      if (el.tagName === "BUTTON") {
-        el.style.display = "none";
-        return;
-      }
-
-      if (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") {
-        el.style.backgroundColor = "#020817";
-        el.style.borderColor = "#334155";
-        el.style.color = "#f8fafc";
-      } else {
-        el.style.backgroundColor = "#0f172a";
-        el.style.borderColor = "#334155";
-        el.style.color = "#e2e8f0";
-      }
-    });
-
-    document.body.appendChild(clone);
-
-    const canvas = await html2canvas(clone, {
+    const canvas = await html2canvas(exportRef.current, {
       backgroundColor: "#020817",
       scale: 3,
       useCORS: true,
       logging: false,
-      scrollX: 0,
-      scrollY: 0,
     });
-
-    document.body.removeChild(clone);
 
     const image = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = image;
-    link.download = `voyagepro-full-report-${new Date().toISOString().slice(0, 10)}.png`;
+    link.download = `voyagepro-report-${new Date().toISOString().slice(0, 10)}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -912,6 +850,157 @@ const btnGhost =
           </div>
         </div>
       </div>
+      <div
+  style={{
+    position: "fixed",
+    left: "-99999px",
+    top: 0,
+    width: "1400px",
+    background: "#020817",
+    color: "#e2e8f0",
+    padding: "40px",
+    boxSizing: "border-box",
+  }}
+>
+  <div
+    ref={exportRef}
+    style={{
+      background: "#020817",
+      color: "#e2e8f0",
+      fontFamily: "Arial, sans-serif",
+    }}
+  >
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "42px", fontWeight: 700, color: "#ffffff" }}>
+        Cargo Freight Calculator
+      </div>
+      <div style={{ fontSize: "14px", letterSpacing: "0.2em", color: "#22d3ee", marginTop: "6px" }}>
+        ROUTE & FREIGHT ANALYSIS
+      </div>
+    </div>
+
+    <div
+      style={{
+        border: "1px solid #334155",
+        borderRadius: "18px",
+        background: "#0f172a",
+        padding: "24px",
+        marginBottom: "20px",
+      }}
+    >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px", marginBottom: "18px" }}>
+        <div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>VESSEL NAME</div>
+          <div style={{ fontSize: "28px", color: "#fff", marginTop: "8px" }}>{selectedVessel}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>ACCOUNT NAME</div>
+          <div style={{ fontSize: "28px", color: "#fff", marginTop: "8px" }}>{selectedAccount}</div>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "18px" }}>
+        <div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>VLSFO PRICE</div>
+          <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>{green.vlsfoPrice}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>MGO PRICE</div>
+          <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>{green.mgoPrice}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em" }}>HIRE</div>
+          <div style={{ fontSize: "22px", color: "#fff", marginTop: "8px" }}>{green.hire}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "18px", marginBottom: "20px" }}>
+      {[
+        ["Loadable Qty", calculated ? fmt(calculated.intake.loadableQty, 0) : "-", "MT", "#ffffff"],
+        ["Total Days", calculated ? fmt(calculated.days.totalDays, 2) : "-", "Days", "#ffffff"],
+        ["Freight", calculated ? fmt(calculated.results.freight, 2) : "-", "USD", "#ffffff"],
+        ["TCE", calculated ? fmt(calculated.results.tce, 0) : "-", "USD / Day", "#ffffff"],
+        ["PNL", calculated ? fmt(calculated.results.pnl, 0) : "-", "USD", pnlValue > 0 ? "#34d399" : pnlValue < 0 ? "#fb7185" : "#ffffff"],
+      ].map(([labelText, value, unit, valueColor]) => (
+        <div
+          key={labelText}
+          style={{
+            border: "1px solid #334155",
+            borderRadius: "18px",
+            background: "#0f172a",
+            padding: "22px",
+          }}
+        >
+          <div style={{ fontSize: "12px", color: "#22d3ee", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+            {labelText}
+          </div>
+          <div style={{ fontSize: "30px", fontWeight: 700, color: valueColor as string, marginTop: "18px" }}>
+            {value}
+          </div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>{unit}</div>
+        </div>
+      ))}
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "18px", marginBottom: "20px" }}>
+      {[
+        ["Ballast Days", calculated ? fmt(calculated.days.ballastDays, 2) : "-", "Days"],
+        ["Laden Days", calculated ? fmt(calculated.days.ladenDays, 2) : "-", "Days"],
+        ["Port Days", calculated ? fmt(calculated.days.loadingDays + calculated.days.dischargingDays + calculated.days.waitingDays, 2) : "-", "Days"],
+        ["Total Bunker", calculated ? fmt(calculated.bunkers.totalVlsfo + calculated.bunkers.totalMgo, 2) : "-", "MT"],
+      ].map(([labelText, value, unit]) => (
+        <div
+          key={labelText}
+          style={{
+            border: "1px solid #334155",
+            borderRadius: "18px",
+            background: "#0f172a",
+            padding: "22px",
+          }}
+        >
+          <div style={{ fontSize: "12px", color: "#22d3ee", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+            {labelText}
+          </div>
+          <div style={{ fontSize: "30px", fontWeight: 700, color: "#fff", marginTop: "18px" }}>
+            {value}
+          </div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>{unit}</div>
+        </div>
+      ))}
+    </div>
+
+    <div
+      style={{
+        border: "1px solid #334155",
+        borderRadius: "18px",
+        background: "#0f172a",
+        padding: "24px",
+      }}
+    >
+      <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "16px" }}>Cargo Details</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+        {[
+          ["Cargo", grey.cargo],
+          ["Quantity", grey.quantity],
+          ["Tolerance", `${percentDisplay(grey.tolerance)}%`],
+          ["Load Port", grey.loadPort],
+          ["Discharge Port", grey.dischargePort],
+          ["Ballast Distance", grey.ballastDistance],
+          ["Laden Distance", grey.ladenDistance],
+          ["Remarks", grey.parameters || "-"],
+        ].map(([labelText, value]) => (
+          <div key={labelText}>
+            <div style={{ fontSize: "12px", color: "#94a3b8", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+              {labelText}
+            </div>
+            <div style={{ fontSize: "20px", color: "#fff", marginTop: "8px" }}>{String(value)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   );
 }
