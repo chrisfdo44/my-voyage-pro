@@ -803,7 +803,7 @@ export default function VesselCargoCalculator() {
             </div>
           </div>
         </div>
-
+      </div>
     </div>
   );
 }
